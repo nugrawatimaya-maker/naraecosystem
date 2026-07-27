@@ -102,15 +102,63 @@
       { id: 'kpr', name: 'Mitra KPR & Perbankan', shortName: 'KPR Perbankan', badge: 'OJK Verified Bank Partner', kebutuhan: 'Fasilitas pembiayaan KPR, appraisal sertifikat & akad kredit instan', nilaiPlatform: 'Integrasi pengajuan KPR & peninjauan sertifikat otomatis', vectorIcon: '🏦', iconBg: 'bg-gradient-to-br from-emerald-600 to-green-700 text-white' }
     ];
 
-    const FLOW_STEPS = [
-      { step: 1, title: 'Platform Website Diluncurkan', subtitle: 'Registrasi Tenant / 12 Jenis Aktor Dibuka', description: 'Pendaftaran terbuka untuk Investor, Developer, Kontraktor, Sub-Kontraktor, Toko Bangunan, Notaris, Legal, Pembeli, Agen Marketing, Freelancer, Kelistrikan, dan KPR Perbankan.', icon: 'globe', badge: 'Phase 1: Onboarding' },
-      { step: 2, title: 'Verifikasi & Onboarding Tim NARA (NLD Hub)', subtitle: 'Dokumen & Legalitas Diperiksa', description: 'Tim NARA melakukan background check, verifikasi sertifikat, SBU, legalitas usaha & finansial sebelum aktor diberi NARA Verified Status.', icon: 'shield-check', badge: 'Phase 2: Risk Audit' },
-      { step: 3, title: 'Listing Tayang di Platform', subtitle: 'Katalog Properti, Jasa & Supply Chain', description: 'Properti butuh investasi, profil kontraktor/sub-kontraktor, katalog toko bangunan, & tarif notaris/legal resmi dipublikasikan.', icon: 'layout-grid', badge: 'Phase 3: Marketplace' },
-      { step: 4, title: 'Pencarian & AI Matching Engine', subtitle: 'Filter Lokasi, Kebutuhan & Budget', description: 'Calon investor, masyarakat, dan developer menemukan mitra yang tepat melalui pencarian pintar NARA.', icon: 'search', badge: 'Phase 4: Match Found' },
-      { step: 5, title: 'Mediasi & Pertemuan Deal Room', subtitle: 'Verifikasi Dokumen & Negosiasi', description: 'Tim NARA menjadwalkan pertemuan offline/online, pendampingan notaris & konsultan legal untuk finalisasi syarat deal.', icon: 'handshake', badge: 'Phase 5: Deal Room' },
-      { step: 6, title: 'Akta & Kontrak oleh Notaris', subtitle: 'Penandatanganan Legitimasi Legal', description: 'Notaris menerbitkan Akta Perjanjian Investasi / Pemborongan / Jual Beli dengan klausal pengikatan NARA Escrow.', icon: 'file-text', badge: 'Phase 6: Legal Contract' },
-      { step: 7, title: 'Eksekusi Proyek & Escrow Milestone', subtitle: 'Konstruksi & Material PO Release', description: 'Dana ditahan aman di NARA Escrow Account. Payout dilepas bertahap per inspeksi milestone fisik proyek.', icon: 'building', badge: 'Phase 7: Execution' },
-      { step: 8, title: 'Pencairan Dana + Fee NARA (5–10%)', subtitle: 'Distribusi Dana Terjamin', description: 'Pencairan dana ke Kontraktor, Toko Bangunan & Notaris. Platform NARA mengambil komisi penjaminan 5–10% dari nilai deal.', icon: 'badge-percent', badge: 'Phase 8: Disbursement' }
+    // --- DATA CARDS DUMMY "LIHAT KEBUTUHANMU DI SINI" ---
+    const NEEDS_CARDS = [
+      {
+        id: 'need-01',
+        title: 'Proposal Bisnis Investasi Properti (Profit 25%)',
+        badge: '📊 Joint Venture Investment',
+        badgeColor: 'bg-teal-50 text-teal-800 border-teal-200',
+        profitTag: 'Profit 25% p.a.',
+        location: 'Makassar & Maros, Sulawesi Selatan',
+        image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80',
+        description: 'Proposal kerjasama investasi pengembangan lahan & cluster perumahan komersial dengan skema bagi hasil terjamin via NARA Escrow.',
+        actionText: 'Masuk NARA Escrow Deal Room'
+      },
+      {
+        id: 'need-02',
+        title: 'Mini Investasi Pengembangan Blok Perumahan',
+        badge: '💎 Mini Investment',
+        badgeColor: 'bg-amber-50 text-amber-800 border-amber-200',
+        profitTag: 'Profit 20% / 6 Bulan',
+        location: 'Kawasan Strategis Maros & BSD',
+        image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=800&q=80',
+        description: 'Peluang dana investasi mini blok hunian siap bangun dengan penjaminan unit sertifikat & legalitas SHM terlindungi.',
+        actionText: 'Masuk NARA Escrow Deal Room'
+      },
+      {
+        id: 'need-03',
+        title: 'Promo Jasa Agen Marketing (Diskon 50%)',
+        badge: '📢 Marketing Special Promo',
+        badgeColor: 'bg-violet-50 text-violet-800 border-violet-200',
+        profitTag: 'Diskon Komisi 50%',
+        location: 'Nasional / Seluruh Indonesia',
+        image: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=800&q=80',
+        description: 'Layanan agen pemasaran & broker properti profesional NARA dengan potongan komisi penanganan 50% dan garansi listing tayang cepat.',
+        actionText: 'Ambil Promo Marketing'
+      },
+      {
+        id: 'need-04',
+        title: '5 Unit Kerjasama Perumahan Sunrise City Maros',
+        badge: '🏡 Developer Special Project',
+        badgeColor: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+        profitTag: 'Profit Hingga Rp 5 Jt / Unit',
+        location: 'Sunrise City Maros, Sulawesi Selatan',
+        image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80',
+        description: 'Kerjasama eksklusif 5 unit hunian siap huni di Perumahan Sunrise City Maros dengan bagi hasil profit hingga Rp 5 Jt per unit terbayar.',
+        actionText: 'Masuk NARA Escrow Deal Room'
+      },
+      {
+        id: 'need-05',
+        title: 'Promo Jasa Arsitektur Hanya 6 Jt (Type 84)',
+        badge: '📐 Special Design Offer',
+        badgeColor: 'bg-blue-50 text-blue-800 border-blue-200',
+        profitTag: 'Hanya Rp 6.000.000',
+        location: 'Desain Online / Wilayah Indonesia',
+        image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80',
+        description: 'Paket gambar kerja lengkap arsitek, struktur PBG/IMB, & render 3D visualisasi rumah mewah type 84 m² hanya seharga Rp 6 Juta.',
+        actionText: 'Ambil Promo Arsitektur'
+      }
     ];
 
     const INITIAL_PROJECTS = [
@@ -138,7 +186,6 @@
     function App() {
       const [activeTab, setActiveTab] = useState('flow');
       const [selectedActor, setSelectedActor] = useState('investor');
-      const [selectedStepId, setSelectedStepId] = useState(1);
       const [projectsList, setProjectsList] = useState(INITIAL_PROJECTS);
       const [activeCategory, setActiveCategory] = useState('projects');
       const [globalSearchQuery, setGlobalSearchQuery] = useState('');
@@ -176,9 +223,6 @@
           window.lucide.createIcons();
         }
       });
-
-      const currentActorObj = ACTORS.find(a => a.id === selectedActor) || ACTORS[0];
-      const currentStepObj = FLOW_STEPS.find(s => s.step === selectedStepId) || FLOW_STEPS[0];
 
       // Filtered Lists based on Search
       const filteredProjectsList = projectsList.filter(p => 
@@ -447,89 +491,72 @@
                   </div>
                 </div>
 
-                {/* 8 Step Flow Stepper */}
+                {/* SECTION: "LIHAT KEBUTUHANMU DI SINI" (CARDS PROPOSAL, PROMO, & KERJASAMA) */}
                 <div className="glass-panel p-6 space-y-6">
-                  <div className="flex justify-between items-center border-b border-slate-200 pb-4">
-                    <div>
-                      <span className="text-xs font-bold text-teal-700 uppercase">Diagram Alur Kerja Resmi</span>
-                      <h2 className="text-xl font-bold text-slate-900">Alur Transaksi & Penjaminan NARA</h2>
-                    </div>
+                  <div className="border-b border-slate-200 pb-4">
+                    <span className="text-xs font-bold text-teal-700 uppercase tracking-wider">NARA Hub Deals & Promosi</span>
+                    <h2 className="text-2xl font-black text-slate-900 mt-1">Lihat Kebutuhanmu Di Sini</h2>
                   </div>
 
-                  {/* Stepper Buttons */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
-                    {FLOW_STEPS.map(stepObj => {
-                      const isSelected = selectedStepId === stepObj.step;
-                      return (
-                        <button
-                          key={stepObj.step}
-                          onClick={() => setSelectedStepId(stepObj.step)}
-                          className={`p-3 rounded-xl border text-left transition-all ${
-                            isSelected 
-                              ? 'bg-teal-50 border-[#1ac1b9] text-teal-900 shadow-sm'
-                              : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-white hover:border-slate-300'
-                          }`}
-                        >
-                          <div className="flex justify-between items-center text-xs font-bold mb-1">
-                            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${isSelected ? 'bg-[#1ac1b9] text-slate-950' : 'bg-slate-200 text-slate-700'}`}>
-                              {stepObj.step}
-                            </span>
-                          </div>
-                          <p className="text-[11px] font-bold line-clamp-2">{stepObj.title}</p>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Step Detail Output */}
-                  <div className="bg-slate-50 rounded-2xl border border-slate-200 p-6 space-y-4">
-                    <div className="flex justify-between items-center border-b border-slate-200 pb-3">
-                      <div>
-                        <span className="text-xs text-teal-700 font-bold uppercase">Tahap {currentStepObj.step} — {currentStepObj.badge}</span>
-                        <h3 className="text-lg font-bold text-slate-900">{currentStepObj.title}</h3>
-                        <p className="text-xs text-slate-500">{currentStepObj.subtitle}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <button 
-                          disabled={selectedStepId === 1}
-                          onClick={() => setSelectedStepId(p => Math.max(1, p - 1))}
-                          className="px-3 py-1 bg-white border border-slate-300 text-xs rounded font-semibold text-slate-700 disabled:opacity-40"
-                        >
-                          ← Sebelum
-                        </button>
-                        <button 
-                          disabled={selectedStepId === 8}
-                          onClick={() => setSelectedStepId(p => Math.min(8, p + 1))}
-                          className="px-3 py-1 bg-amber-500 text-slate-950 font-bold text-xs rounded disabled:opacity-40"
-                        >
-                          Lanjut →
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                      <div className="space-y-2">
-                        <p className="font-bold text-slate-800">Deskripsi Tahapan:</p>
-                        <p className="bg-white p-3 rounded-xl border border-slate-200 text-slate-700 leading-relaxed">
-                          {currentStepObj.description}
-                        </p>
-                      </div>
-                      <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-2">
-                        <span className="text-teal-700 font-bold block">Status Output Tahap ini:</span>
-                        <div className="bg-slate-50 p-2.5 rounded text-slate-700 border border-slate-200">
-                          {selectedStepId === 7 || selectedStepId === 8 ? (
-                            <div>
-                              <p className="text-amber-700 font-bold">Escrow Milestone Disbursement Active</p>
-                              <p className="text-[11px] text-slate-600">Pelepasan dana otomatis saat verifikasi milestone disetujui.</p>
+                  {/* Grid 5 Dummy Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {NEEDS_CARDS.map(card => (
+                      <div 
+                        key={card.id} 
+                        className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-[#1ac1b9] transition-all flex flex-col justify-between group"
+                      >
+                        <div>
+                          {/* Image Banner */}
+                          <div className="relative h-44 overflow-hidden">
+                            <img 
+                              src={card.image} 
+                              alt={card.title} 
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                            <div className="absolute top-3 left-3">
+                              <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-lg border shadow-sm ${card.badgeColor}`}>
+                                {card.badge}
+                              </span>
                             </div>
-                          ) : (
-                            <p>Proses verifikasi & koordinasi 12 jenis aktor berjalan sesuai protokol penjaminan NARA.</p>
-                          )}
+                            <div className="absolute bottom-3 right-3">
+                              <span className="bg-slate-950/80 backdrop-blur text-amber-300 text-xs font-black px-2.5 py-1 rounded-lg border border-amber-300/40">
+                                {card.profitTag}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Card Content */}
+                          <div className="p-4 space-y-2.5">
+                            <h3 className="font-extrabold text-sm text-slate-900 group-hover:text-[#0d9488] transition-colors leading-snug">
+                              {card.title}
+                            </h3>
+
+                            <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
+                              <span>📍</span>
+                              <span>{card.location}</span>
+                            </div>
+
+                            <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">
+                              {card.description}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Card Footer Button */}
+                        <div className="p-4 pt-0">
+                          <button 
+                            onClick={() => setActiveTab('escrow')}
+                            className="w-full py-2.5 bg-[#1ac1b9] hover:bg-[#16a39d] text-slate-950 font-extrabold text-xs rounded-xl shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2"
+                          >
+                            <span>🔒</span>
+                            <span>{card.actionText}</span>
+                          </button>
                         </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
+
               </div>
             )}
 
