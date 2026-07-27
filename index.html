@@ -315,19 +315,17 @@
               </div>
             </div>
 
-            {/* MAIN HEADER BAR: LOGO NARA ECOSYSTEM + KATEGORI + PENCARIAN + MASUK & DAFTAR */}
-            <div className="bg-white border-b border-slate-200 py-3 px-4">
+            {/* MAIN HEADER BAR: LOGO GAMBAR RESMI NARAECOSYSTEM + KATEGORI + PENCARIAN + MASUK & DAFTAR */}
+            <div className="bg-white border-b border-slate-200 py-2.5 px-4">
               <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
                 
-                {/* Left: Logo & Tulisan NARA Ecosystem */}
-                <div className="flex items-center gap-3 cursor-pointer shrink-0" onClick={() => setIsAboutModalOpen(true)}>
-                  <div className="w-9 h-9 rounded-xl bg-[#1ac1b9] flex items-center justify-center font-black text-slate-950 text-base shadow-sm">
-                    N
-                  </div>
-                  <div>
-                    <span className="font-extrabold text-base text-slate-900 tracking-tight block">NARA Ecosystem</span>
-                    <p className="text-[10px] text-slate-500 font-medium">Properti & Konstruksi Ekosistem Marketplace</p>
-                  </div>
+                {/* Left: Logo Gambar Resmi NaraEcosystem */}
+                <div className="flex items-center cursor-pointer shrink-0" onClick={() => setIsAboutModalOpen(true)}>
+                  <img 
+                    src="./nara-logo.png" 
+                    alt="NaraEcosystem® Logo" 
+                    className="h-10 sm:h-12 w-auto object-contain"
+                  />
                 </div>
 
                 {/* Center: Select Kategori & Kolom Pencarian */}
@@ -923,9 +921,7 @@
               <div className="bg-white border border-slate-300 rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden text-slate-900">
                 <div className="flex justify-between items-center border-b border-slate-200 pb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-slate-950 font-black text-xl">
-                      N
-                    </div>
+                    <img src="./nara-logo.png" alt="NaraEcosystem Logo" className="h-8 w-auto object-contain" />
                     <div>
                       <h2 className="text-xl font-black text-slate-900">Tentang NARA Ecosystem</h2>
                       <p className="text-xs text-slate-500">Platform Penjamin & Manajemen Risiko Properti & Konstruksi</p>

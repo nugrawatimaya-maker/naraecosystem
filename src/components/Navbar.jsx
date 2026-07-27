@@ -49,15 +49,13 @@ export default function Navbar({
       <div className="bg-white border-b border-slate-200 py-3 px-4">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
           
-          {/* Left: Logo & Text NARA Ecosystem */}
-          <div className="flex items-center gap-3 cursor-pointer shrink-0" onClick={onOpenAbout}>
-            <div className="w-9 h-9 rounded-xl bg-[#1ac1b9] flex items-center justify-center font-black text-slate-950 text-base shadow-sm">
-              N
-            </div>
-            <div>
-              <span className="font-extrabold text-base text-slate-900 tracking-tight block">NARA Ecosystem</span>
-              <p className="text-[10px] text-slate-500 font-medium">Properti & Konstruksi Ekosistem Marketplace</p>
-            </div>
+          {/* Left: Logo Gambar Resmi NaraEcosystem */}
+          <div className="flex items-center cursor-pointer shrink-0" onClick={onOpenAbout}>
+            <img 
+              src="./nara-logo.png" 
+              alt="NaraEcosystem® Logo" 
+              className="h-10 sm:h-12 w-auto object-contain"
+            />
           </div>
 
           {/* Center: Select Kategori & Kolom Pencarian */}
