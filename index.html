@@ -517,48 +517,24 @@
                   />
                 </div>
 
-                {/* Center: Select Kategori & Kolom Pencarian */}
-                <div className="flex flex-1 items-center gap-2 max-w-2xl w-full">
-                  
-                  {/* Select Kategori */}
-                  <select 
-                    value={searchCategory}
+                {/* Center: Kolom Pencarian Utama */}
+                <div className="relative flex-1 max-w-2xl w-full">
+                  <input 
+                    type="text"
+                    placeholder="Cari lahan, rumah, jasa kontraktor, toko material, atau notaris..."
+                    value={globalSearchQuery}
                     onChange={(e) => {
-                      setSearchCategory(e.target.value);
-                      if (e.target.value !== 'all') {
-                        setActiveTab('marketplace');
-                        setActiveCategory(e.target.value);
-                      }
+                      setGlobalSearchQuery(e.target.value);
+                      if (e.target.value.length > 0) setActiveTab('marketplace');
                     }}
-                    className="bg-slate-50 border border-slate-300 text-slate-800 text-xs font-bold rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1ac1b9] shadow-sm shrink-0 cursor-pointer"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-4 pr-14 py-2.5 text-xs font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1ac1b9] shadow-sm"
+                  />
+                  <button 
+                    onClick={() => setActiveTab('marketplace')}
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-[#1ac1b9] hover:bg-[#16a39d] text-slate-950 font-extrabold px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer shadow-sm"
                   >
-                    <option value="all">📂 Semua Kategori</option>
-                    <option value="projects">🏢 Properti & Lahan Investasi</option>
-                    <option value="contractors">👷 Kontraktor & Sub-Work</option>
-                    <option value="materials">🏪 Toko Bangunan & Material</option>
-                    <option value="legal">📜 Notaris & Jasa Legalitas</option>
-                  </select>
-
-                  {/* Kolom Pencarian */}
-                  <div className="relative flex-1">
-                    <input 
-                      type="text"
-                      placeholder="Cari lahan, rumah, jasa kontraktor, toko material, atau notaris..."
-                      value={globalSearchQuery}
-                      onChange={(e) => {
-                        setGlobalSearchQuery(e.target.value);
-                        if (e.target.value.length > 0) setActiveTab('marketplace');
-                      }}
-                      className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-3.5 pr-12 py-2 text-xs font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1ac1b9] shadow-sm"
-                    />
-                    <button 
-                      onClick={() => setActiveTab('marketplace')}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 bg-[#1ac1b9] hover:bg-[#16a39d] text-slate-950 font-bold p-1 px-2.5 rounded-lg text-xs transition-all cursor-pointer shadow-sm"
-                    >
-                      Cari
-                    </button>
-                  </div>
-
+                    Cari
+                  </button>
                 </div>
 
                 {/* Right: Panel Tombol MASUK & DAFTAR (STYLE TOKOPEDIA) */}
