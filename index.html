@@ -32,7 +32,7 @@
     }
   </script>
 
-  <!-- Custom Light Theme Styles -->
+  <!-- Custom Light Theme & Running Marquee Keyframes -->
   <style>
     body {
       margin: 0;
@@ -69,6 +69,21 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
+    
+    /* 1 BARIS CONTINUOUS RUNNING MARQUEE (KIRI KE KANAN ANIMATION) */
+    @keyframes marqueeScroll {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-50%); }
+    }
+    .animate-marquee {
+      display: flex;
+      width: max-content;
+      animation: marqueeScroll 22s linear infinite;
+    }
+    .animate-marquee:hover {
+      animation-play-state: paused;
+    }
+
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: #f8fafc; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -161,17 +176,107 @@
       }
     ];
 
-    // --- DATA MITRA STRATEGIS LOGO LIST (TEAL BANNER CARD) ---
+    // --- DATA MITRA STRATEGIS LOGO LIST WITH PURE HIGH-RES VECTOR BADGES ---
     const PARTNER_LOGOS = [
-      { id: 'btn', name: 'Bank BTN', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/87/Bank_BTN_logo_2024.svg', icon: '🏠' },
-      { id: 'mandiri', name: 'Bank Mandiri', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Bank_Mandiri_logo_2016.svg', icon: '🏦' },
-      { id: 'bri', name: 'Bank BRI', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/2e/BRI_2020.svg', icon: '🏦' },
-      { id: 'bni', name: 'Bank BNI', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/55/BNI_logo.svg', icon: '🏦' },
-      { id: 'sig', name: 'Semen Indonesia (SIG)', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e4/Logo_SIG.svg', icon: '🏗️' },
-      { id: 'cks', name: 'PT. Catur Kencana Sakti', textLogo: 'PT. Catur Kencana Sakti', icon: '🏢' },
-      { id: 'ppat', name: 'Notaris PPAT', textLogo: 'Notaris PPAT', icon: '📜' },
-      { id: 'harapanjaya', name: 'PT. Harapan Jaya Brand', textLogo: 'PT. Harapan Jaya Brand', icon: '🔨' },
-      { id: 'kalla', name: 'Kalla Beton', textLogo: 'Kalla Beton', icon: '🧱' }
+      { 
+        id: 'btn', 
+        name: 'Bank BTN', 
+        badgeNode: (
+          <div className="flex items-center gap-1.5">
+            <span className="text-[#00529c] font-black text-sm tracking-tighter">btn</span>
+            <span className="w-2 h-2 rounded-full bg-[#ed1c24] -ml-0.5"></span>
+            <span className="text-[10px] text-slate-400 font-extrabold ml-1">Bank BTN</span>
+          </div>
+        )
+      },
+      { 
+        id: 'mandiri', 
+        name: 'Bank Mandiri', 
+        badgeNode: (
+          <div className="flex items-center gap-1">
+            <span className="text-[#003b6e] font-black text-sm tracking-tight">mandırı</span>
+            <svg className="w-5 h-3 text-[#fdb813]" viewBox="0 0 24 14" fill="currentColor">
+              <path d="M0 7C4 3 8 11 12 7C16 3 20 11 24 7V14H0V7Z" />
+            </svg>
+          </div>
+        )
+      },
+      { 
+        id: 'bri', 
+        name: 'Bank BRI', 
+        badgeNode: (
+          <div className="flex items-center gap-1.5">
+            <div className="bg-[#00529c] text-white px-1.5 py-0.5 rounded font-black text-xs tracking-tighter shadow-xs">
+              BRI
+            </div>
+            <span className="text-[#00529c] font-black text-xs">Bank BRI</span>
+          </div>
+        )
+      },
+      { 
+        id: 'bni', 
+        name: 'Bank BNI', 
+        badgeNode: (
+          <div className="flex items-center gap-1.5">
+            <div className="bg-[#f26522] text-white px-1.5 py-0.5 rounded font-black text-xs shadow-xs">
+              46
+            </div>
+            <span className="text-[#00529c] font-black text-xs">BNI</span>
+          </div>
+        )
+      },
+      { 
+        id: 'sig', 
+        name: 'Semen Indonesia (SIG)', 
+        badgeNode: (
+          <div className="flex items-center gap-1.5">
+            <div className="bg-[#e11b22] text-white px-1.5 py-0.5 rounded font-black text-xs shadow-xs">
+              SIG
+            </div>
+            <span className="text-slate-900 font-extrabold text-xs">Semen Indonesia</span>
+          </div>
+        )
+      },
+      { 
+        id: 'cks', 
+        name: 'PT. Catur Kencana Sakti', 
+        badgeNode: (
+          <div className="flex items-center gap-1.5">
+            <span className="text-base">🏢</span>
+            <span className="text-xs font-extrabold text-slate-900 whitespace-nowrap">PT. Catur Kencana Sakti</span>
+          </div>
+        )
+      },
+      { 
+        id: 'ppat', 
+        name: 'Notaris PPAT', 
+        badgeNode: (
+          <div className="flex items-center gap-1.5">
+            <span className="text-base">📜</span>
+            <span className="text-xs font-extrabold text-amber-900 whitespace-nowrap">Notaris PPAT</span>
+          </div>
+        )
+      },
+      { 
+        id: 'harapanjaya', 
+        name: 'PT. Harapan Jaya Brand', 
+        badgeNode: (
+          <div className="flex items-center gap-1.5">
+            <span className="text-base">🔨</span>
+            <span className="text-xs font-extrabold text-indigo-900 whitespace-nowrap">PT. Harapan Jaya Brand</span>
+          </div>
+        )
+      },
+      { 
+        id: 'kalla', 
+        name: 'Kalla Beton', 
+        badgeNode: (
+          <div className="flex items-center gap-1.5">
+            <span className="text-base">🧱</span>
+            <span className="text-xs font-extrabold text-emerald-900 whitespace-nowrap">Kalla Beton</span>
+          </div>
+        )
+      }
     ];
 
     const INITIAL_PROJECTS = [
@@ -792,34 +897,30 @@
               </div>
             )}
 
-            {/* TEAL PARTNERSHIP BANNER CARD (EKSAT PERSIS MOCKUP USER) */}
-            <div className="rounded-2xl bg-[#1ac1b9] p-5 sm:p-6 shadow-md border border-teal-400 text-white space-y-3">
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm sm:text-base font-black text-white tracking-wide uppercase">
-                  Partnership :
+            {/* TEAL PARTNERSHIP BANNER CARD (1 BARIS CONTINUOUS RUNNING MARQUEE SLIDER) */}
+            <div className="rounded-2xl bg-[#1ac1b9] p-5 sm:p-6 shadow-md border border-teal-400 text-white space-y-3 overflow-hidden">
+              <div className="flex justify-between items-center border-b border-teal-300/30 pb-2">
+                <h3 className="text-sm sm:text-base font-black text-white tracking-wide uppercase flex items-center gap-2">
+                  <span>PARTNERSHIP :</span>
                 </h3>
+                <span className="text-[10px] text-teal-950 font-extrabold bg-teal-300/60 px-2.5 py-0.5 rounded-full backdrop-blur">
+                  ⚡ Automatic Horizontal Running
+                </span>
               </div>
               
-              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3.5 pt-1">
-                {PARTNER_LOGOS.map(partner => (
-                  <div 
-                    key={partner.id}
-                    className="bg-white rounded-xl px-3.5 py-2 flex items-center gap-2 shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer border border-white/90 shrink-0"
-                  >
-                    {partner.logoUrl ? (
-                      <img 
-                        src={partner.logoUrl} 
-                        alt={partner.name} 
-                        className="h-6 sm:h-7 w-auto object-contain max-w-[100px] sm:max-w-[120px]" 
-                      />
-                    ) : (
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm sm:text-base">{partner.icon}</span>
-                        <span className="text-xs font-black text-slate-900">{partner.textLogo}</span>
-                      </div>
-                    )}
-                  </div>
-                ))}
+              {/* Single Row Running Marquee Slider Container */}
+              <div className="relative w-full overflow-hidden py-1">
+                <div className="animate-marquee flex items-center gap-3 sm:gap-4">
+                  {/* Duplicated array for smooth infinite seamless loop */}
+                  {[...PARTNER_LOGOS, ...PARTNER_LOGOS].map((partner, idx) => (
+                    <div 
+                      key={`${partner.id}-${idx}`}
+                      className="bg-white rounded-xl px-4 py-2.5 flex items-center justify-center gap-2 shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer border border-white/90 shrink-0"
+                    >
+                      {partner.badgeNode}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
