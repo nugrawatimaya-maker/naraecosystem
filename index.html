@@ -161,6 +161,91 @@
       }
     ];
 
+    // --- DATA MITRA STRATEGIS / PARTNERSHIP ---
+    const PARTNERS = [
+      {
+        id: 'partner-sig',
+        name: 'Semen Indonesia (SIG)',
+        category: 'BUMN Material Semen & Konstruksi',
+        badge: 'Mitra Supply Chain BUMN',
+        desc: 'Produsen semen terbesar di Asia Tenggara, penyuplai semen utama untuk proyek-proyek NARA Ecosystem.',
+        icon: '🏗️',
+        color: 'from-[#b91c1c] to-[#991b1b]'
+      },
+      {
+        id: 'partner-bri',
+        name: 'Bank BRI',
+        category: 'Perbankan KPR & Pembiayaan Proyek',
+        badge: 'Mitra KPR & Bank Penampung Escrow',
+        desc: 'Fasilitas KPR instan & integrasi penjaminan dana escrow transaksi properti NARA.',
+        icon: '🏦',
+        color: 'from-[#0284c7] to-[#0369a1]'
+      },
+      {
+        id: 'partner-mandiri',
+        name: 'Bank Mandiri',
+        category: 'Perbankan KPR & Commercial Banking',
+        badge: 'Mitra Perbankan Strategis',
+        desc: 'Layanan Mandiri KPR, kredit konstruksi developer & escrow account terverifikasi.',
+        icon: '🏦',
+        color: 'from-[#1e3a8a] to-[#1e40af]'
+      },
+      {
+        id: 'partner-btn',
+        name: 'Bank BTN',
+        category: 'Perbankan Spesialis KPR Properti',
+        badge: 'Sahabat KPR Indonesia',
+        desc: 'Bank BUMN pelopor pembiayaan perumahan, kemudahan akad KPR & appraisal cepat.',
+        icon: '🏠',
+        color: 'from-[#0369a1] to-[#0f766e]'
+      },
+      {
+        id: 'partner-bni',
+        name: 'Bank BNI',
+        category: 'Perbankan KPR & Financial Advisory',
+        badge: 'Mitra Perbankan BUMN',
+        desc: 'BNI Griya & penjaminan transaksi rekening escrow untuk keamanan modal investor.',
+        icon: '🏦',
+        color: 'from-[#ea580c] to-[#c2410c]'
+      },
+      {
+        id: 'partner-cks',
+        name: 'PT. Catur Kencana Sakti',
+        category: 'Developer & Kontraktor General',
+        badge: 'Developer & Pemborong Utama',
+        desc: 'Pengembang kawasan hunian terpadu & general contractor berpengalaman tinggi.',
+        icon: '🏢',
+        color: 'from-[#0d9488] to-[#0f766e]'
+      },
+      {
+        id: 'partner-ppat',
+        name: 'Notaris PPAT Mitra',
+        category: 'Ikatan Notaris & Legalitas Pertanahan',
+        badge: 'Verifikator Legal & Akta Escrow',
+        desc: 'Jaringan Notaris & PPAT resmi penerbit Akta Perjanjian Investasi & Legal Due Diligence.',
+        icon: '📜',
+        color: 'from-[#d97706] to-[#b45309]'
+      },
+      {
+        id: 'partner-harapanjaya',
+        name: 'PT. Harapan Jaya Brand',
+        category: 'Supplier & Distribusi Building Material',
+        badge: 'Distributor Material Utama',
+        desc: 'Penyedia besi beton, atap, & bahan bangunan berkualitas tinggi bersertifikasi SNI.',
+        icon: '🔨',
+        color: 'from-[#4f46e5] to-[#4338ca]'
+      },
+      {
+        id: 'partner-kalla',
+        name: 'Kalla Beton',
+        category: 'Ready-mix & Precast Concrete Specialist',
+        badge: 'Penyedia Beton & Precast',
+        desc: 'Penyedia beton siap pakai (ready-mix), bata ringan & elemen pra-cetak bermutu tinggi.',
+        icon: '🧱',
+        color: 'from-[#059669] to-[#047857]'
+      }
+    ];
+
     const INITIAL_PROJECTS = [
       { id: 'proj-01', title: 'NARA Green Residence BSD - Cluster Premium 45 Unit', category: 'Pengembangan Properti (Joint Venture)', location: 'BSD City, Tangerang Selatan', targetInvestment: 12500000000, collectedInvestment: 8750000000, projectedRoi: '16.5% p.a.', riskScore: 'Low Risk (94/100)', assignedNotary: 'Notaris Hj. Ratna Juwita, S.H., M.Kn.', assignedContractor: 'PT Karya Beton Nusantara', image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80', description: 'Proyek hunian minimalis modern 2 lantai berbasis smart eco-living di lokasi strategis BSD. Membutuhkan tambahan dana investasi termin konstruksi tahap 2.' },
       { id: 'proj-02', title: 'Lahan Komersial Metland Cyber City 1.200 m²', category: 'Penjualan Lahan Strategic / JV', location: 'Kembangan, Jakarta Barat', targetInvestment: 24000000000, collectedInvestment: 24000000000, projectedRoi: '18.0% p.a.', riskScore: 'Low Risk (98/100)', assignedNotary: 'Notaris Dr. Hendra Wijaya, S.H.', assignedContractor: 'Pending Bidding', image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80', description: 'Lahan hook komersial sangat prospektif untuk ruko modern 4 lantai dan mini warehouse logistics center.' },
@@ -778,6 +863,64 @@
                 </div>
               </div>
             )}
+
+            {/* PARTNERSHIP & MITRA STRATEGIS SECTION (DI ATAS FOOTER) */}
+            <div className="glass-panel p-6 space-y-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-200 pb-4">
+                <div>
+                  <span className="text-xs font-bold text-teal-700 uppercase tracking-wider">Strategic Ecosystem Alliance</span>
+                  <h2 className="text-2xl font-black text-slate-900 mt-0.5">Mitra Strategis & Partnership NARA</h2>
+                </div>
+                <div className="bg-teal-50 border border-teal-200 px-3.5 py-1 rounded-full text-teal-800 text-xs font-extrabold flex items-center gap-1.5 shrink-0 shadow-xs">
+                  <span>🤝</span>
+                  <span>9 Institutional Partners Verified</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {PARTNERS.map(partner => (
+                  <div 
+                    key={partner.id} 
+                    className="bg-white border border-slate-200 rounded-2xl p-4.5 space-y-3 shadow-xs hover:shadow-md hover:border-[#1ac1b9] transition-all cursor-pointer group flex flex-col justify-between"
+                  >
+                    <div className="space-y-2.5">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${partner.color} text-white flex items-center justify-center text-xl shadow-sm border border-white/20 shrink-0 group-hover:scale-105 transition-transform`}>
+                          {partner.icon}
+                        </div>
+                        <div>
+                          <h3 className="font-extrabold text-sm text-slate-900 group-hover:text-[#0d9488] transition-colors leading-tight">
+                            {partner.name}
+                          </h3>
+                          <span className="text-[11px] font-bold text-slate-500 block">
+                            {partner.category}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="inline-block">
+                        <span className="bg-slate-100 text-slate-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-slate-200">
+                          {partner.badge}
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
+                        {partner.desc}
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-100 flex justify-between items-center text-[11px] font-semibold text-slate-500">
+                      <span className="flex items-center gap-1 text-teal-700 font-bold">
+                        <span>✓</span> Terintegrasi System NARA
+                      </span>
+                      <span className="text-slate-400 group-hover:text-[#0d9488] transition-colors">
+                        Detail →
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
 
           </main>
 
