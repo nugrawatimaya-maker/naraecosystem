@@ -130,7 +130,7 @@
         id: 'need-03',
         title: 'Promo Jasa Agen Marketing (Diskon 50%)',
         badge: '📢 Marketing Special Promo',
-        badgeColor: 'bg-violet-50 text-violet-800 border-violet-200',
+        badgeColor: 'bg-[#1ac1b9]/10 text-[#0d9488] border-[#1ac1b9]/30',
         profitTag: 'Diskon Komisi 50%',
         location: 'Nasional / Seluruh Indonesia',
         image: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=800&q=80',
@@ -161,89 +161,17 @@
       }
     ];
 
-    // --- DATA MITRA STRATEGIS / PARTNERSHIP ---
-    const PARTNERS = [
-      {
-        id: 'partner-sig',
-        name: 'Semen Indonesia (SIG)',
-        category: 'BUMN Material Semen & Konstruksi',
-        badge: 'Mitra Supply Chain BUMN',
-        desc: 'Produsen semen terbesar di Asia Tenggara, penyuplai semen utama untuk proyek-proyek NARA Ecosystem.',
-        icon: '🏗️',
-        color: 'from-[#b91c1c] to-[#991b1b]'
-      },
-      {
-        id: 'partner-bri',
-        name: 'Bank BRI',
-        category: 'Perbankan KPR & Pembiayaan Proyek',
-        badge: 'Mitra KPR & Bank Penampung Escrow',
-        desc: 'Fasilitas KPR instan & integrasi penjaminan dana escrow transaksi properti NARA.',
-        icon: '🏦',
-        color: 'from-[#0284c7] to-[#0369a1]'
-      },
-      {
-        id: 'partner-mandiri',
-        name: 'Bank Mandiri',
-        category: 'Perbankan KPR & Commercial Banking',
-        badge: 'Mitra Perbankan Strategis',
-        desc: 'Layanan Mandiri KPR, kredit konstruksi developer & escrow account terverifikasi.',
-        icon: '🏦',
-        color: 'from-[#1e3a8a] to-[#1e40af]'
-      },
-      {
-        id: 'partner-btn',
-        name: 'Bank BTN',
-        category: 'Perbankan Spesialis KPR Properti',
-        badge: 'Sahabat KPR Indonesia',
-        desc: 'Bank BUMN pelopor pembiayaan perumahan, kemudahan akad KPR & appraisal cepat.',
-        icon: '🏠',
-        color: 'from-[#0369a1] to-[#0f766e]'
-      },
-      {
-        id: 'partner-bni',
-        name: 'Bank BNI',
-        category: 'Perbankan KPR & Financial Advisory',
-        badge: 'Mitra Perbankan BUMN',
-        desc: 'BNI Griya & penjaminan transaksi rekening escrow untuk keamanan modal investor.',
-        icon: '🏦',
-        color: 'from-[#ea580c] to-[#c2410c]'
-      },
-      {
-        id: 'partner-cks',
-        name: 'PT. Catur Kencana Sakti',
-        category: 'Developer & Kontraktor General',
-        badge: 'Developer & Pemborong Utama',
-        desc: 'Pengembang kawasan hunian terpadu & general contractor berpengalaman tinggi.',
-        icon: '🏢',
-        color: 'from-[#0d9488] to-[#0f766e]'
-      },
-      {
-        id: 'partner-ppat',
-        name: 'Notaris PPAT Mitra',
-        category: 'Ikatan Notaris & Legalitas Pertanahan',
-        badge: 'Verifikator Legal & Akta Escrow',
-        desc: 'Jaringan Notaris & PPAT resmi penerbit Akta Perjanjian Investasi & Legal Due Diligence.',
-        icon: '📜',
-        color: 'from-[#d97706] to-[#b45309]'
-      },
-      {
-        id: 'partner-harapanjaya',
-        name: 'PT. Harapan Jaya Brand',
-        category: 'Supplier & Distribusi Building Material',
-        badge: 'Distributor Material Utama',
-        desc: 'Penyedia besi beton, atap, & bahan bangunan berkualitas tinggi bersertifikasi SNI.',
-        icon: '🔨',
-        color: 'from-[#4f46e5] to-[#4338ca]'
-      },
-      {
-        id: 'partner-kalla',
-        name: 'Kalla Beton',
-        category: 'Ready-mix & Precast Concrete Specialist',
-        badge: 'Penyedia Beton & Precast',
-        desc: 'Penyedia beton siap pakai (ready-mix), bata ringan & elemen pra-cetak bermutu tinggi.',
-        icon: '🧱',
-        color: 'from-[#059669] to-[#047857]'
-      }
+    // --- DATA MITRA STRATEGIS LOGO LIST (TEAL BANNER CARD) ---
+    const PARTNER_LOGOS = [
+      { id: 'btn', name: 'Bank BTN', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/87/Bank_BTN_logo_2024.svg', icon: '🏠' },
+      { id: 'mandiri', name: 'Bank Mandiri', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Bank_Mandiri_logo_2016.svg', icon: '🏦' },
+      { id: 'bri', name: 'Bank BRI', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/2e/BRI_2020.svg', icon: '🏦' },
+      { id: 'bni', name: 'Bank BNI', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/55/BNI_logo.svg', icon: '🏦' },
+      { id: 'sig', name: 'Semen Indonesia (SIG)', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e4/Logo_SIG.svg', icon: '🏗️' },
+      { id: 'cks', name: 'PT. Catur Kencana Sakti', textLogo: 'PT. Catur Kencana Sakti', icon: '🏢' },
+      { id: 'ppat', name: 'Notaris PPAT', textLogo: 'Notaris PPAT', icon: '📜' },
+      { id: 'harapanjaya', name: 'PT. Harapan Jaya Brand', textLogo: 'PT. Harapan Jaya Brand', icon: '🔨' },
+      { id: 'kalla', name: 'Kalla Beton', textLogo: 'Kalla Beton', icon: '🧱' }
     ];
 
     const INITIAL_PROJECTS = [
@@ -864,59 +792,32 @@
               </div>
             )}
 
-            {/* PARTNERSHIP & MITRA STRATEGIS SECTION (DI ATAS FOOTER) */}
-            <div className="glass-panel p-6 space-y-6">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-200 pb-4">
-                <div>
-                  <span className="text-xs font-bold text-teal-700 uppercase tracking-wider">Strategic Ecosystem Alliance</span>
-                  <h2 className="text-2xl font-black text-slate-900 mt-0.5">Mitra Strategis & Partnership NARA</h2>
-                </div>
-                <div className="bg-teal-50 border border-teal-200 px-3.5 py-1 rounded-full text-teal-800 text-xs font-extrabold flex items-center gap-1.5 shrink-0 shadow-xs">
-                  <span>🤝</span>
-                  <span>9 Institutional Partners Verified</span>
-                </div>
+            {/* TEAL PARTNERSHIP BANNER CARD (EKSAT PERSIS MOCKUP USER) */}
+            <div className="rounded-2xl bg-[#1ac1b9] p-5 sm:p-6 shadow-md border border-teal-400 text-white space-y-3">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm sm:text-base font-black text-white tracking-wide uppercase">
+                  Partnership :
+                </h3>
               </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {PARTNERS.map(partner => (
+              
+              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3.5 pt-1">
+                {PARTNER_LOGOS.map(partner => (
                   <div 
-                    key={partner.id} 
-                    className="bg-white border border-slate-200 rounded-2xl p-4.5 space-y-3 shadow-xs hover:shadow-md hover:border-[#1ac1b9] transition-all cursor-pointer group flex flex-col justify-between"
+                    key={partner.id}
+                    className="bg-white rounded-xl px-3.5 py-2 flex items-center gap-2 shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer border border-white/90 shrink-0"
                   >
-                    <div className="space-y-2.5">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${partner.color} text-white flex items-center justify-center text-xl shadow-sm border border-white/20 shrink-0 group-hover:scale-105 transition-transform`}>
-                          {partner.icon}
-                        </div>
-                        <div>
-                          <h3 className="font-extrabold text-sm text-slate-900 group-hover:text-[#0d9488] transition-colors leading-tight">
-                            {partner.name}
-                          </h3>
-                          <span className="text-[11px] font-bold text-slate-500 block">
-                            {partner.category}
-                          </span>
-                        </div>
+                    {partner.logoUrl ? (
+                      <img 
+                        src={partner.logoUrl} 
+                        alt={partner.name} 
+                        className="h-6 sm:h-7 w-auto object-contain max-w-[100px] sm:max-w-[120px]" 
+                      />
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm sm:text-base">{partner.icon}</span>
+                        <span className="text-xs font-black text-slate-900">{partner.textLogo}</span>
                       </div>
-
-                      <div className="inline-block">
-                        <span className="bg-slate-100 text-slate-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-slate-200">
-                          {partner.badge}
-                        </span>
-                      </div>
-
-                      <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
-                        {partner.desc}
-                      </p>
-                    </div>
-
-                    <div className="pt-2 border-t border-slate-100 flex justify-between items-center text-[11px] font-semibold text-slate-500">
-                      <span className="flex items-center gap-1 text-teal-700 font-bold">
-                        <span>✓</span> Terintegrasi System NARA
-                      </span>
-                      <span className="text-slate-400 group-hover:text-[#0d9488] transition-colors">
-                        Detail →
-                      </span>
-                    </div>
+                    )}
                   </div>
                 ))}
               </div>
