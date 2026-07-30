@@ -17,45 +17,29 @@ export default function Navbar({
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 shadow-xs">
       
-      {/* TOP BAR 1: TOKOPEDIA-STYLE MINIMALIST LIGHT SLATE + CMS BUTTON */}
+      {/* TOP BAR 1: TOKOPEDIA-STYLE MINIMALIST LIGHT SLATE */}
       <div className="bg-slate-100/80 border-b border-slate-200/80 py-1.5 px-4 text-xs">
-        <div className="max-w-7xl mx-auto flex items-center justify-between font-medium text-slate-600">
-          
-          {/* Left: CMS Control Button */}
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={onOpenCms}
-              className="px-2.5 py-0.5 bg-gradient-to-r from-teal-700 to-emerald-700 hover:from-teal-800 hover:to-emerald-800 text-white font-extrabold rounded-md shadow-xs flex items-center gap-1.5 cursor-pointer transition-all"
-            >
-              <span>⚙️ CMS Admin Layout</span>
-              <span className="bg-amber-400 text-slate-950 text-[9px] px-1.5 py-0.2 rounded font-black">CONTROL PANEL</span>
-            </button>
-          </div>
+        <div className="max-w-7xl mx-auto flex items-center justify-end gap-6 font-medium text-slate-600">
+          <button 
+            onClick={onOpenAbout}
+            className="hover:text-[#0d9488] transition-colors cursor-pointer"
+          >
+            Tentang Nara Ecosystem
+          </button>
 
-          {/* Right: Navigation */}
-          <div className="flex items-center gap-6">
-            <button 
-              onClick={onOpenAbout}
-              className="hover:text-[#0d9488] transition-colors cursor-pointer"
-            >
-              Tentang Nara Ecosystem
-            </button>
+          <button 
+            onClick={onOpenListing}
+            className="hover:text-[#0d9488] transition-colors cursor-pointer"
+          >
+            Mulai Pasang Listing
+          </button>
 
-            <button 
-              onClick={onOpenListing}
-              className="hover:text-[#0d9488] transition-colors cursor-pointer"
-            >
-              Mulai Pasang Listing
-            </button>
-
-            <button 
-              onClick={onOpenCare}
-              className="hover:text-[#0d9488] transition-colors cursor-pointer"
-            >
-              Nara Care
-            </button>
-          </div>
-
+          <button 
+            onClick={onOpenCare}
+            className="hover:text-[#0d9488] transition-colors cursor-pointer"
+          >
+            Nara Care
+          </button>
         </div>
       </div>
 
