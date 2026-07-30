@@ -343,7 +343,26 @@
         if (window.lucide) {
           window.lucide.createIcons();
         }
-      });
+
+        // Auto-sync CMS settings saved from admin.html
+        const syncCmsData = () => {
+          const savedData = localStorage.getItem('nara_cms_config');
+          if (savedData) {
+            try {
+              const parsed = JSON.parse(savedData);
+              if (parsed.heroConfig) setHeroConfig(parsed.heroConfig);
+              if (parsed.needsCardsList) setNeedsCardsList(parsed.needsCardsList);
+              if (parsed.partnersList) setPartnersList(parsed.partnersList);
+            } catch(e) {
+              console.error('Error syncing CMS data', e);
+            }
+          }
+        };
+
+        syncCmsData();
+        window.addEventListener('storage', syncCmsData);
+        return () => window.removeEventListener('storage', syncCmsData);
+      }, []);
 
       const showToast = (msg) => {
         setCmsToast(msg);
@@ -463,15 +482,16 @@
             <div className="bg-slate-100/80 border-b border-slate-200/80 py-1.5 px-4 text-xs">
               <div className="max-w-7xl mx-auto flex items-center justify-between font-medium text-slate-600">
                 
-                {/* Left: CMS Control Button */}
+                {/* Left: CMS Control Button (Navigasi ke Halaman Terpisah admin.html) */}
                 <div className="flex items-center gap-2">
-                  <button 
-                    onClick={() => setIsCmsModalOpen(true)}
+                  <a 
+                    href="./admin.html"
+                    target="_blank"
                     className="px-2.5 py-0.5 bg-gradient-to-r from-teal-700 to-emerald-700 hover:from-teal-800 hover:to-emerald-800 text-white font-extrabold rounded-md shadow-xs flex items-center gap-1.5 cursor-pointer transition-all"
                   >
-                    <span>⚙️ CMS Admin Layout</span>
-                    <span className="bg-amber-400 text-slate-950 text-[9px] px-1.5 py-0.2 rounded font-black">CONTROL PANEL</span>
-                  </button>
+                    <span>⚙️ CMS Admin Portal</span>
+                    <span className="bg-amber-400 text-slate-950 text-[9px] px-1.5 py-0.2 rounded font-black">ENTERPRISE PAGE</span>
+                  </a>
                 </div>
 
                 {/* Right: Quick Navigation */}
