@@ -344,6 +344,58 @@
           window.lucide.createIcons();
         }
 
+        // Fetch live data directly from Laravel REST API Backend (http://127.0.0.1:8000/api/v1/)
+        const fetchLaravelApiData = async () => {
+          try {
+            const [resActors, resDeals, resPartners, resProjects] = await Promise.all([
+              fetch('http://127.0.0.1:8000/api/v1/actors').then(r => r.json()).catch(() => null),
+              fetch('http://127.0.0.1:8000/api/v1/deals-promos').then(r => r.json()).catch(() => null),
+              fetch('http://127.0.0.1:8000/api/v1/partners').then(r => r.json()).catch(() => null),
+              fetch('http://127.0.0.1:8000/api/v1/projects').then(r => r.json()).catch(() => null),
+            ]);
+
+            if (resActors && resActors.data && resActors.data.length > 0) {
+              setActorsList(resActors.data);
+            }
+            if (resDeals && resDeals.data && resDeals.data.length > 0) {
+              setNeedsCardsList(resDeals.data.map(d => ({
+                id: d.deal_code || d.id,
+                title: d.title,
+                badge: d.badge,
+                badgeColor: d.badge_color,
+                profitTag: d.profit_tag,
+                location: d.location,
+                image: d.image,
+                description: d.description,
+                actionText: d.action_text
+              })));
+            }
+            if (resPartners && resPartners.data && resPartners.data.length > 0) {
+              setPartnersList(resPartners.data);
+            }
+            if (resProjects && resProjects.data && resProjects.data.length > 0) {
+              setProjectsList(resProjects.data.map(p => ({
+                id: p.project_code || p.id,
+                title: p.title,
+                category: p.category,
+                location: p.location,
+                targetInvestment: Number(p.target_investment),
+                collectedInvestment: Number(p.collected_investment),
+                projectedRoi: p.projected_roi,
+                riskScore: p.risk_score,
+                assignedNotary: p.assigned_notary,
+                assignedContractor: p.assigned_contractor,
+                image: p.image,
+                description: p.description
+              })));
+            }
+          } catch (e) {
+            console.log('Using local fallback state', e);
+          }
+        };
+
+        fetchLaravelApiData();
+
         // Auto-sync CMS settings saved from admin.html
         const syncCmsData = () => {
           const savedData = localStorage.getItem('nara_cms_config');
