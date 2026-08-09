@@ -773,6 +773,32 @@
 
                   <div className="relative z-10 space-y-6">
                     
+                    {/* DYNAMIC CMS HEADLINE NEWS & PRESS RELEASE BAR */}
+                    <div className="bg-emerald-950/80 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl border border-teal-400/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
+                      <div className="flex items-start sm:items-center gap-3">
+                        <span className="bg-amber-400 text-slate-950 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0 flex items-center gap-1.5 shadow-sm">
+                          <span className="w-1.5 h-1.5 rounded-full bg-slate-950 animate-ping"></span>
+                          <span>{heroConfig.headlineCategory || '📢 BERITA TERBARU'}</span>
+                        </span>
+                        <div>
+                          <h4 className="text-xs sm:text-sm font-black text-white line-clamp-1">
+                            {heroConfig.headingPre} <span className="text-amber-300">{heroConfig.headingHighlight}</span>
+                          </h4>
+                          <p className="text-[11px] text-emerald-200/80 line-clamp-1 hidden md:block">
+                            {heroConfig.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      <a 
+                        href="./berita.html"
+                        className="shrink-0 px-4 py-2 bg-[#1ac1b9] hover:bg-[#16a39d] text-slate-950 font-black text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 transform hover:scale-105"
+                      >
+                        <span>📖 Baca Berita Lengkap</span>
+                        <span>➔</span>
+                      </a>
+                    </div>
+
                     {/* Persona Toggle Bar (Interactive Instant Personalization) */}
                     <div className="flex flex-wrap items-center gap-2 bg-emerald-950/70 backdrop-blur-md p-1.5 rounded-2xl border border-emerald-400/30 w-fit">
                       <span className="text-[11px] font-bold text-amber-300 px-3 uppercase tracking-wider hidden sm:inline">Pilih Peran:</span>
