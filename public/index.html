@@ -576,12 +576,12 @@
                 </div>
 
                 <div className="flex items-center gap-5 text-xs">
-                  <button 
-                    onClick={() => setIsAboutModalOpen(true)}
+                  <a 
+                    href="./tentang.html"
                     className="hover:text-amber-300 transition-colors cursor-pointer"
                   >
                     Tentang NARA
-                  </button>
+                  </a>
 
                   <button 
                     onClick={() => setIsListingModalOpen(true)}
