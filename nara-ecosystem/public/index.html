@@ -619,7 +619,6 @@
                   </a>
                 </div>
               </div>
-            </div>
 
             {/* MAIN HEADER BAR */}
             <div className="py-3 px-4">
