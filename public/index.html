@@ -819,14 +819,6 @@
                           {currentPersona.desc}
                         </p>
 
-                        {/* Guarantee Highlight Card */}
-                        <div className="glass-luxury-dark px-4 py-3 rounded-2xl border border-teal-300/30 flex items-center gap-3 text-xs">
-                          <span className="text-2xl">🛡️</span>
-                          <div>
-                            <span className="font-extrabold text-amber-300 block">Jaminan Transaksi Resmi NARA:</span>
-                            <span className="text-slate-200">Dana ditahan di Rekening Bersama Escrow & audit legalitas 3-lapis oleh Notaris bersertifikasi.</span>
-                          </div>
-                        </div>
 
                         {/* Action Buttons */}
                         <div className="pt-2 flex flex-wrap gap-3">
