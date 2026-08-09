@@ -799,25 +799,6 @@
                       </a>
                     </div>
 
-                    {/* Persona Toggle Bar (Interactive Instant Personalization) */}
-                    <div className="flex flex-wrap items-center gap-2 bg-emerald-950/70 backdrop-blur-md p-1.5 rounded-2xl border border-emerald-400/30 w-fit">
-                      <span className="text-[11px] font-bold text-amber-300 px-3 uppercase tracking-wider hidden sm:inline">Pilih Peran:</span>
-                      
-                      {[
-                        { id: 'investor', label: '💰 Investor Proyek', desc: 'ROI 14-25%' },
-                        { id: 'developer', label: '📍 Pemilik Lahan', desc: 'Joint Venture' },
-                        { id: 'kontraktor', label: '🔨 Kontraktor', desc: 'Dana Escrow' },
-                        { id: 'notaris', label: '📜 Notaris & Legal', desc: 'Due Diligence' }
-                      ].map(p => (
-                        <button
-                          key={p.id}
-                          onClick={() => setHeroPersona(p.id)}
-                          className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${heroPersona === p.id ? 'bg-[#1ac1b9] text-slate-950 shadow-md scale-105' : 'text-emerald-100 hover:text-white hover:bg-emerald-900/60'}`}
-                        >
-                          <span>{p.label}</span>
-                        </button>
-                      ))}
-                    </div>
 
                     {/* Main Headline & Visual Grid */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
