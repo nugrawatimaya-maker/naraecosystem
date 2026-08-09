@@ -398,15 +398,33 @@
       const [calcRate, setCalcRate] = useState(7.5);
 
       useEffect(() => {
+        // Load LocalStorage CMS fallback first
+        const localCms = localStorage.getItem('nara_cms_config');
+        if (localCms) {
+          try {
+            const parsed = JSON.parse(localCms);
+            if (parsed.heroConfig) setHeroConfig(parsed.heroConfig);
+            if (parsed.needsCardsList) setNeedsCardsList(parsed.needsCardsList);
+            if (parsed.partnersList) setPartnersList(parsed.partnersList);
+          } catch(e) {}
+        }
+
         // Fetch live data directly from Laravel REST API Backend
         const fetchLaravelApiData = async () => {
           try {
-            const [resActors, resDeals, resPartners, resProjects] = await Promise.all([
+            const [resActors, resDeals, resPartners, resProjects, resCms] = await Promise.all([
               fetch('/api/v1/actors').then(r => r.json()).catch(() => null),
               fetch('/api/v1/deals-promos').then(r => r.json()).catch(() => null),
               fetch('/api/v1/partners').then(r => r.json()).catch(() => null),
               fetch('/api/v1/projects').then(r => r.json()).catch(() => null),
+              fetch('/api/v1/cms-config').then(r => r.json()).catch(() => null),
             ]);
+
+            if (resCms && resCms.data) {
+              if (resCms.data.heroConfig) setHeroConfig(resCms.data.heroConfig);
+              if (resCms.data.needsCardsList) setNeedsCardsList(resCms.data.needsCardsList);
+              if (resCms.data.partnersList) setPartnersList(resCms.data.partnersList);
+            }
 
             if (resActors && resActors.data && resActors.data.length > 0) setActorsList(resActors.data);
             if (resDeals && resDeals.data && resDeals.data.length > 0) {

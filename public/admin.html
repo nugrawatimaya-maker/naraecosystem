@@ -363,7 +363,7 @@
         setAdminTheme(savedTheme);
         document.body.className = `theme-${savedTheme}`;
 
-        // Load stored CMS data
+        // 1. Load stored CMS data from LocalStorage (Instant)
         const savedData = localStorage.getItem('nara_cms_config');
         if (savedData) {
           try {
@@ -376,6 +376,19 @@
             console.error('Error parsing stored CMS data', e);
           }
         }
+
+        // 2. Fetch from Backend Database Server API
+        fetch('/api/v1/cms-config')
+          .then(res => res.json())
+          .then(res => {
+            if (res && res.data) {
+              if (res.data.heroConfig) setHeroConfig(res.data.heroConfig);
+              if (res.data.needsCardsList) setNeedsCardsList(res.data.needsCardsList);
+              if (res.data.partnersList) setPartnersList(res.data.partnersList);
+              if (res.data.escrowSettings) setEscrowSettings(res.data.escrowSettings);
+            }
+          })
+          .catch(e => console.log('CMS Server Sync: menggunakan cache lokal.'));
       }, []);
 
       const changeTheme = (newTheme) => {
@@ -399,7 +412,7 @@
         }
       };
 
-      const handleSaveAll = () => {
+      const handleSaveAll = async () => {
         const payload = {
           heroConfig,
           needsCardsList,
@@ -407,8 +420,21 @@
           escrowSettings,
           lastSaved: new Date().toISOString()
         };
+        // 1. Simpan ke LocalStorage Browser
         localStorage.setItem('nara_cms_config', JSON.stringify(payload));
-        showToast('🚀 SUKSES! Seluruh Data CMS Berhasil Disimpan & Sinkron ke Web Utama!');
+
+        // 2. Simpan Permanen ke Database Server VPS via REST API
+        try {
+          const response = await fetch('/api/v1/cms-config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const result = await response.json();
+          showToast('🚀 SUKSES! Data Berhasil Disimpan ke Database Server VPS & Web!');
+        } catch(err) {
+          showToast('💾 Data Berhasil Disimpan ke Browser (LocalStorage)!');
+        }
       };
 
       const handleResetDefaults = () => {
