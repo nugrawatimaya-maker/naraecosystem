@@ -44,4 +44,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/escrow', [EscrowController::class, 'show']);
     Route::post('/escrow/calculate', [EscrowController::class, 'calculateFee']);
 
+    // CI/CD Instant Auto-Deploy Webhook (Zero SSH required)
+    Route::match(['get', 'post'], '/deploy-webhook', [App\Http\Controllers\Api\v1\DeployWebhookController::class, 'deploy']);
+
 });

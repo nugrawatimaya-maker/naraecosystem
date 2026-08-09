@@ -10,19 +10,9 @@ jobs:
     name: Deploy to NARA VPS Server
     runs-on: ubuntu-latest
     steps:
-      - name: Executing remote SSH commands on VPS
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          port: 22
-          script: |
-            echo "🚀 Starting Auto-Deployment on VPS..."
-            cd /var/www/nara-ecosystem
-            git pull origin main
-            php artisan view:clear
-            php artisan cache:clear
-            php artisan config:clear
-            php artisan route:clear
-            echo "✅ Auto-Deployment Completed Successfully!"
+      - name: Trigger Instant Webhook Deploy on VPS
+        run: |
+          echo "🚀 Triggering NARA Ecosystem Auto-Deployment on VPS..."
+          RESPONSE=$(curl -s -X POST "http://103.93.135.68/api/v1/deploy-webhook")
+          echo "Server Response: $RESPONSE"
+          echo "✅ Auto-Deployment Successfully Triggered on VPS!"
