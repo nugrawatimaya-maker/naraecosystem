@@ -207,6 +207,49 @@
       gradientBg: 'from-[#064e3b] via-[#047857] to-[#022c22]'
     };
 
+    const GRADIENT_PALETTES = [
+      {
+        id: 'emerald',
+        name: 'Deep Emerald Luxury',
+        tagline: 'Tema Modern Luxury Resmi NARA',
+        gradient: 'from-[#064e3b] via-[#047857] to-[#022c22]',
+        accent: '#34d399',
+        desc: 'Nuansa hijau botol mewah berpadu aksen emas champagne, memberikan kesan prestisius, kokoh, dan berkelas tinggi.'
+      },
+      {
+        id: 'teal',
+        name: 'Teal Beams Dynamic',
+        tagline: 'Cyan FinTech & Modern Ecosystem',
+        gradient: 'from-[#0f4c4a] via-[#136663] to-[#0d7873]',
+        accent: '#1ac1b9',
+        desc: 'Warna teal futuristik yang segar dan dinamis, mencerminkan transparansi dan teknologi finansial modern.'
+      },
+      {
+        id: 'navy',
+        name: 'Royal Navy Corporate',
+        tagline: 'Institutional & Banking Alliance',
+        gradient: 'from-[#1e3a8a] via-[#1d4ed8] to-[#1e40af]',
+        accent: '#60a5fa',
+        desc: 'Biru navy korporat yang memberikan rasa aman, stabil, dan kredibilitas perbankan tinggi bagi para investor institusi.'
+      },
+      {
+        id: 'gold',
+        name: 'Luxury Champagne Gold',
+        tagline: 'Exclusive VIP & Joint Venture',
+        gradient: 'from-[#78350f] via-[#b45309] to-[#d97706]',
+        accent: '#fbbf24',
+        desc: 'Warna emas tembaga elegan yang sangat cocok untuk periode promo investasi bernilai tinggi dan penawaran VIP.'
+      },
+      {
+        id: 'obsidian',
+        name: 'Midnight Obsidian Platinum',
+        tagline: 'Ultra Dark Minimalist Glassmorphism',
+        gradient: 'from-[#0f172a] via-[#1e293b] to-[#020617]',
+        accent: '#94a3b8',
+        desc: 'Kombinasi hitam obsidian pekat dan slate titanium untuk tampilan monokrom ultra-modern dengan efek glow tajam.'
+      }
+    ];
+
     const DEFAULT_NEEDS = [
       {
         id: 'need-01',
@@ -280,7 +323,7 @@
     function AdminCMSApp() {
       const [isAuthenticated, setIsAuthenticated] = useState(false);
       const [passkey, setPasskey] = useState('');
-      const [activeSection, setActiveSection] = useState('hero'); // 'hero', 'deals', 'partners', 'about', 'escrow', 'theme'
+      const [activeSection, setActiveSection] = useState('hero'); // 'hero', 'palette', 'deals', 'partners', 'escrow', 'theme'
       const [toastMsg, setToastMsg] = useState('');
       const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
@@ -376,6 +419,11 @@
           localStorage.removeItem('nara_cms_config');
           showToast('🔄 Pengaturan Berhasil Dikembalikan ke Default!');
         }
+      };
+
+      const handleSelectPalette = (gradientString, paletteName) => {
+        setHeroConfig({ ...heroConfig, gradientBg: gradientString });
+        showToast(`🌈 Palet "${paletteName}" dipilih! Klik "Simpan Ke Web" untuk menerapkan.`);
       };
 
       const handleAddCardSubmit = (e) => {
@@ -522,8 +570,22 @@
                     onClick={() => setActiveSection('hero')}
                     className={`w-full p-2.5 rounded-xl text-left flex items-center gap-3 transition-all cursor-pointer ${activeSection === 'hero' ? 'nav-item-active' : 'nav-item-idle'}`}
                   >
+                    <span className="text-base">✏️</span>
+                    {!isSidebarCollapsed && <span>Banner Hero & Slogan</span>}
+                  </button>
+
+                  {/* DEDICATED PALETTE MENU IN SIDEBAR */}
+                  <button 
+                    onClick={() => setActiveSection('palette')}
+                    className={`w-full p-2.5 rounded-xl text-left flex items-center gap-3 transition-all cursor-pointer ${activeSection === 'palette' ? 'nav-item-active' : 'nav-item-idle'}`}
+                  >
                     <span className="text-base">🎨</span>
-                    {!isSidebarCollapsed && <span>Banner Hero & Teks</span>}
+                    {!isSidebarCollapsed && (
+                      <div className="flex justify-between items-center flex-1">
+                        <span>Palet Gradasi Banner Web</span>
+                        <span className="text-[9px] bg-amber-500/20 text-amber-400 font-mono px-1.5 py-0.5 rounded-md">Live</span>
+                      </div>
+                    )}
                   </button>
 
                   <button 
@@ -589,7 +651,7 @@
                     className={`w-full p-2.5 rounded-xl text-left flex items-center gap-3 transition-all cursor-pointer ${activeSection === 'theme' ? 'nav-item-active' : 'nav-item-idle'}`}
                   >
                     <span className="text-base">⚙️</span>
-                    {!isSidebarCollapsed && <span>Panel Tema Gelap/Terang</span>}
+                    {!isSidebarCollapsed && <span>Panel Tema Dashboard</span>}
                   </button>
                 </div>
 
@@ -634,6 +696,7 @@
                 <span className="text-xs opacity-60 font-mono">CMS /</span>
                 <h1 className="text-sm font-black capitalize tracking-tight">
                   {activeSection === 'hero' && 'Pengaturan Banner Hero & Slogan'}
+                  {activeSection === 'palette' && 'Palet Warna & Gradasi Banner Web'}
                   {activeSection === 'deals' && 'Manajemen Promosi & Deal Cards'}
                   {activeSection === 'partners' && 'Manajemen Mitra Running Marquee'}
                   {activeSection === 'escrow' && 'Konfigurasi Rekening Escrow & Fee NARA'}
@@ -697,7 +760,7 @@
             {/* Main Workspace */}
             <main className="p-6 md:p-8 space-y-6 flex-1 max-w-6xl w-full mx-auto">
               
-              {/* SECTION 1: HERO */}
+              {/* SECTION 1: HERO TEXT */}
               {activeSection === 'hero' && (
                 <div className="space-y-6">
                   
@@ -710,7 +773,12 @@
                         </h2>
                         <p className="text-xs opacity-75 mt-0.5">Ubah kata pembuka dan sorotan pada halaman depan marketplace.</p>
                       </div>
-                      <span className="text-xs opacity-50 font-mono">index.html</span>
+                      <button 
+                        onClick={() => setActiveSection('palette')}
+                        className="px-3 py-1.5 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-bold hover:bg-amber-500/30 transition-all"
+                      >
+                        🎨 Ganti Warna Gradasi ➔
+                      </button>
                     </div>
 
                     <div className="space-y-4 text-xs">
@@ -746,51 +814,88 @@
                     </div>
                   </div>
 
-                  {/* Gradient Presets */}
+                </div>
+              )}
+
+              {/* SECTION 2: PALETTE STUDIO (MOVED TO DEDICATED SIDEBAR VIEW) */}
+              {activeSection === 'palette' && (
+                <div className="space-y-6">
+                  
+                  {/* Live Hero Banner Preview Mockup */}
                   <div className="card-bg p-6 md:p-8 space-y-4 rounded-3xl">
-                    <h2 className="text-sm font-extrabold text-[#1ac1b9] uppercase tracking-wider border-b border-slate-700/30 pb-3">
-                      🎨 Pilihan Palet Gradasi Banner Web Utama
-                    </h2>
+                    <div className="flex justify-between items-center border-b border-slate-700/30 pb-3">
+                      <div>
+                        <h2 className="text-sm font-extrabold text-[#1ac1b9] uppercase tracking-wider">
+                          👁️ Pratinjau Tampilan Hero Banner Web (Live Mockup)
+                        </h2>
+                        <p className="text-xs opacity-75 mt-0.5">Berikut simulasi langsung tampilan Hero Banner di index.html dengan palet yang sedang aktif.</p>
+                      </div>
+                      <span className="bg-emerald-500/20 text-emerald-400 text-[10px] font-black px-2.5 py-1 rounded-full border border-emerald-500/30">
+                        LIVE PREVIEW
+                      </span>
+                    </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-                      <button 
-                        onClick={() => setHeroConfig({...heroConfig, gradientBg: 'from-[#064e3b] via-[#047857] to-[#022c22]'})}
-                        className={`p-4 rounded-2xl border text-left bg-gradient-to-r from-[#064e3b] via-[#047857] to-[#022c22] text-white cursor-pointer ${heroConfig.gradientBg.includes('#064e3b') ? 'ring-2 ring-amber-400 border-white shadow-xl' : 'border-slate-700'}`}
-                      >
-                        <span className="font-black text-sm block">Deep Emerald (#064E3B)</span>
-                        <span className="text-emerald-200 text-[11px]">Tema Modern Luxury NARA</span>
-                      </button>
+                    <div className={`p-8 rounded-2xl bg-gradient-to-r ${heroConfig.gradientBg} text-white shadow-2xl space-y-4 border border-white/10`}>
+                      <span className="inline-block bg-white/15 backdrop-blur-md px-3 py-1 rounded-full text-[11px] font-bold tracking-wider text-amber-300">
+                        🛡️ REKENING ESCROW RESMI & AUDIT 3-LAPIS
+                      </span>
+                      <h3 className="text-2xl md:text-3xl font-black leading-tight">
+                        {heroConfig.headingPre} <span className="text-amber-300 underline decoration-amber-400/60">{heroConfig.headingHighlight}</span>
+                      </h3>
+                      <p className="text-xs md:text-sm text-slate-200 max-w-2xl leading-relaxed opacity-90">
+                        {heroConfig.description}
+                      </p>
+                    </div>
+                  </div>
 
-                      <button 
-                        onClick={() => setHeroConfig({...heroConfig, gradientBg: 'from-[#0f4c4a] via-[#136663] to-[#0d7873]'})}
-                        className={`p-4 rounded-2xl border text-left bg-gradient-to-r from-[#0f4c4a] via-[#136663] to-[#0d7873] text-white cursor-pointer ${heroConfig.gradientBg.includes('#0f4c4a') ? 'ring-2 ring-amber-400 border-white shadow-xl' : 'border-slate-700'}`}
-                      >
-                        <span className="font-black text-sm block">Teal Beams (#1AC1B9)</span>
-                        <span className="text-teal-200 text-[11px]">Cyan Dynamic Theme</span>
-                      </button>
+                  {/* Gradient Palette Cards */}
+                  <div className="card-bg p-6 md:p-8 space-y-5 rounded-3xl">
+                    <div className="border-b border-slate-700/30 pb-3">
+                      <h2 className="text-sm font-extrabold text-[#1ac1b9] uppercase tracking-wider">
+                        🎨 Pilih Palet Warna Gradasi Banner Utama
+                      </h2>
+                      <p className="text-xs opacity-75 mt-0.5">Klik salah satu palet di bawah untuk menerapkan warna gradasi ke Hero Banner website utama.</p>
+                    </div>
 
-                      <button 
-                        onClick={() => setHeroConfig({...heroConfig, gradientBg: 'from-[#1e3a8a] via-[#1d4ed8] to-[#1e40af]'})}
-                        className={`p-4 rounded-2xl border text-left bg-gradient-to-r from-[#1e3a8a] via-[#1d4ed8] to-[#1e40af] text-white cursor-pointer ${heroConfig.gradientBg.includes('#1e3a8a') ? 'ring-2 ring-amber-400 border-white shadow-xl' : 'border-slate-700'}`}
-                      >
-                        <span className="font-black text-sm block">Royal Navy Blue</span>
-                        <span className="text-blue-200 text-[11px]">Corporate Institutional</span>
-                      </button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                      {GRADIENT_PALETTES.map(p => {
+                        const isSelected = heroConfig.gradientBg === p.gradient;
+                        return (
+                          <div 
+                            key={p.id}
+                            onClick={() => handleSelectPalette(p.gradient, p.name)}
+                            className={`p-5 rounded-2xl border-2 cursor-pointer transition-all space-y-3 relative overflow-hidden ${isSelected ? 'border-[#1ac1b9] ring-4 ring-teal-500/20 shadow-xl subcard-bg' : 'subcard-bg border-transparent hover:border-slate-500'}`}
+                          >
+                            <div className="flex justify-between items-center">
+                              <div className="flex items-center gap-2">
+                                <span className={`w-4 h-4 rounded-full bg-gradient-to-r ${p.gradient} border border-white/40 inline-block shadow-sm`}></span>
+                                <strong className="text-sm font-black">{p.name}</strong>
+                              </div>
+                              {isSelected && (
+                                <span className="bg-[#1ac1b9] text-slate-950 text-[10px] font-black px-2.5 py-0.5 rounded-full">
+                                  AKTIF
+                                </span>
+                              )}
+                            </div>
 
-                      <button 
-                        onClick={() => setHeroConfig({...heroConfig, gradientBg: 'from-[#78350f] via-[#b45309] to-[#d97706]'})}
-                        className={`p-4 rounded-2xl border text-left bg-gradient-to-r from-[#78350f] via-[#b45309] to-[#d97706] text-white cursor-pointer ${heroConfig.gradientBg.includes('#78350f') ? 'ring-2 ring-amber-400 border-white shadow-xl' : 'border-slate-700'}`}
-                      >
-                        <span className="font-black text-sm block">Luxury Gold</span>
-                        <span className="text-amber-200 text-[11px]">Exclusive VIP Deal</span>
-                      </button>
+                            {/* Color Strip */}
+                            <div className={`h-10 rounded-xl bg-gradient-to-r ${p.gradient} border border-white/20 shadow-inner flex items-center justify-end px-3 text-[10px] font-mono text-white/80`}>
+                              {p.tagline}
+                            </div>
+
+                            <p className="text-[11px] opacity-75 leading-relaxed">
+                              {p.desc}
+                            </p>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
                 </div>
               )}
 
-              {/* SECTION 2: DEALS */}
+              {/* SECTION 3: DEALS */}
               {activeSection === 'deals' && (
                 <div className="space-y-6">
                   
@@ -914,7 +1019,7 @@
                 </div>
               )}
 
-              {/* SECTION 3: PARTNERS */}
+              {/* SECTION 4: PARTNERS */}
               {activeSection === 'partners' && (
                 <div className="space-y-6">
                   
@@ -986,7 +1091,7 @@
                 </div>
               )}
 
-              {/* SECTION 4: ESCROW CONFIG */}
+              {/* SECTION 5: ESCROW CONFIG */}
               {activeSection === 'escrow' && (
                 <div className="space-y-6">
                   <div className="card-bg p-6 md:p-8 space-y-5 rounded-3xl">
@@ -1033,15 +1138,15 @@
                 </div>
               )}
 
-              {/* SECTION 5: THEME SWITCHER */}
+              {/* SECTION 6: THEME SWITCHER */}
               {activeSection === 'theme' && (
                 <div className="space-y-6">
                   <div className="card-bg p-6 md:p-8 space-y-6 rounded-3xl">
                     <div className="border-b border-slate-700/30 pb-3">
                       <h2 className="text-sm font-extrabold text-[#1ac1b9] uppercase tracking-wider">
-                        🎨 Panel Pengaturan Tema Gelap / Terang CMS Admin
+                        🎨 Panel Pengaturan Tema Gelap / Terang Dashboard Admin
                       </h2>
-                      <p className="text-xs opacity-75 mt-1">Pilih tema dashboard yang paling sesuai dengan preferensi kenyamanan visual Anda.</p>
+                      <p className="text-xs opacity-75 mt-1">Pilih tema antarmuka admin yang paling nyaman untuk manajemen harian Anda.</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
