@@ -1,0 +1,1845 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NARA — Ekosistem Properti & Konstruksi Marketplace (Escrow & Risk Management)</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            naraBg: '#ffffff',
+            naraGold: '#d97706',
+            naraEmerald: '#0d9488',
+            naraBlue: '#2563eb',
+            naraTeal: '#1ac1b9',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom Light Theme & Dynamic Marquee Slider Styles -->
+  <style>
+    body {
+      margin: 0;
+      background-color: #ffffff;
+      color: #0f172a;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(26, 193, 185, 0.06) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(245, 158, 11, 0.06) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.03) 0%, transparent 60%);
+      background-attachment: fixed;
+      min-height: 100vh;
+    }
+    .glass-panel {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.01);
+    }
+    .glass-panel-gold {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, #ffffff 100%);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.08);
+    }
+    .glass-panel-emerald {
+      background: linear-gradient(135deg, rgba(26, 193, 185, 0.08) 0%, #ffffff 100%);
+      border: 1px solid rgba(26, 193, 185, 0.4);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(26, 193, 185, 0.08);
+    }
+    .gradient-text-gold {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    /* 1 BARIS CONTINUOUS RUNNING MARQUEE */
+    @keyframes marqueeScroll {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-50%); }
+    }
+    .animate-marquee {
+      display: flex;
+      width: max-content;
+      animation: marqueeScroll 22s linear infinite;
+    }
+    .animate-marquee:hover {
+      animation-play-state: paused;
+    }
+
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #f8fafc; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  </style>
+
+  <!-- React 18, ReactDOM 18, Babel, Lucide Icons -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // --- DATA INITIAL CMS DEFAULTS ---
+    const INITIAL_ACTORS = [
+      { id: 'investor', name: 'Investor Properti & Proyek', shortName: 'Investor', badge: 'Verifikasi Finansial Ready', kebutuhan: 'Peluang investasi properti/proyek yang aman & terverifikasi ROI 12-18% p.a.', nilaiPlatform: 'Deal-flow terkurasi, due diligence 3-lapis, dana ditahan escrow NARA', vectorIcon: '📈', iconBg: 'bg-gradient-to-br from-teal-500 to-emerald-600 text-white' },
+      { id: 'developer', name: 'Pemilik Lahan & Developer', shortName: 'Developer', badge: 'Legalitas Lahan Validated', kebutuhan: 'Akses pendanaan modal, jaringan pembeli unit, & kontraktor terpercaya', nilaiPlatform: 'Akses ke investor & kontraktor terverifikasi, alur legalitas lahan & PBG lebih cepat', vectorIcon: '🏢', iconBg: 'bg-gradient-to-br from-amber-500 to-orange-600 text-white' },
+      { id: 'kontraktor', name: 'Kontraktor Utama (General Contractor)', shortName: 'Kontraktor', badge: 'SBU & SKA Verified', kebutuhan: 'Proyek dengan garansi dana ter-escrow (bukan janji kosong), termin pembayaran pasti', nilaiPlatform: 'Proyek dengan dana ter-escrow NARA, pembayaran termin dijamin tepat waktu', vectorIcon: '🔨', iconBg: 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white' },
+      { id: 'subkontraktor', name: 'Sub-Kontraktor Spesialis', shortName: 'Sub-Kontraktor', badge: 'Spesialis MEP & Struktur', kebutuhan: 'Sub-work proyek besar dengan kejelasan jadwal & pencairan dana berkala', nilaiPlatform: 'Direct matching dengan Kontraktor Utama, sub-escrow termin otomatis', vectorIcon: '⚙️', iconBg: 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white' },
+      { id: 'tokobangunan', name: 'Toko Bangunan & Supplier Material', shortName: 'Toko Bangunan', badge: 'Mitra Supply Chain NARA', kebutuhan: 'Volume pembelian material yang stabil & kepastian pembayaran invoice PO', nilaiPlatform: 'Akses langsung ke proyek aktif, sistem PO & pembayaran terintegrasi Escrow', vectorIcon: '🏪', iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white' },
+      { id: 'masyarakat', name: 'Masyarakat Umum / Pembeli Properti', shortName: 'Pembeli', badge: 'Buyer Protection Active', kebutuhan: 'Rumah / unit properti aman secara legalitas, bebas sengketa & serah terima terjamin', nilaiPlatform: 'Listing terverifikasi NARA, perlindungan dana booking & DP via Rekening Bersama Escrow', vectorIcon: '🏡', iconBg: 'bg-gradient-to-br from-rose-500 to-pink-600 text-white' },
+      { id: 'notaris', name: 'Notaris & PPAT Mitra', shortName: 'Notaris', badge: 'Ikatan Notaris Indonesia Verified', kebutuhan: 'Klien transaksi properti & investasi yang konsisten & alur berkas terstandar', nilaiPlatform: 'Alur kerja & dokumen terstandar otomatis, volume transaksi rutin dari platform NARA', vectorIcon: '📜', iconBg: 'bg-gradient-to-br from-amber-600 to-yellow-600 text-white' },
+      { id: 'jasalegal', name: 'Penyedia Jasa Legalitas & Audit Lahan', shortName: 'Jasa Legal', badge: 'Legal Audit & Risk Advisor', kebutuhan: 'Klien untuk jasa due diligence dokumen sertifikat, PBG/IMB & tata ruang', nilaiPlatform: 'Permintaan due diligence terstruktur otomatis dari setiap deal proyek NARA', vectorIcon: '⚖️', iconBg: 'bg-gradient-to-br from-sky-600 to-blue-700 text-white' },
+      { id: 'agenmarketing', name: 'Agen Marketing & Broker Properti', shortName: 'Agen Marketing', badge: 'Verifikasi Broker Resmi', kebutuhan: 'Listing properti eksklusif & komisi penjualan pasti ter-escrow NARA', nilaiPlatform: 'Akses portofolio proyek eksklusif & kepastian komisi terbayar via escrow', vectorIcon: '📢', iconBg: 'bg-gradient-to-br from-violet-500 to-fuchsia-600 text-white' },
+      { id: 'freelancer', name: 'Freelancer & Mandor Proyek Individual', shortName: 'Freelancer Individual', badge: 'Sertifikasi Keahlian Skilled', kebutuhan: 'Proyek harian/borongan mandiri dengan jaminan pembayaran termin', nilaiPlatform: 'Direct job matching & kepastian bayar dari pemilik proyek', vectorIcon: '🧰', iconBg: 'bg-gradient-to-br from-cyan-500 to-blue-600 text-white' },
+      { id: 'kelistrikan', name: 'Jasa Kelistrikan & Teknik MEP', shortName: 'Jasa Kelistrikan', badge: 'Sertifikat SLO & AKLI', kebutuhan: 'Pekerjaan instalasi kabel, panel listrik & solar energy rumah/gedung', nilaiPlatform: 'Garansi pekerjaan & escrow termin untuk pemasangan sistem listrik', vectorIcon: '⚡', iconBg: 'bg-gradient-to-br from-yellow-400 to-amber-500 text-slate-950' },
+      { id: 'kpr', name: 'Mitra KPR & Perbankan', shortName: 'KPR Perbankan', badge: 'OJK Verified Bank Partner', kebutuhan: 'Fasilitas pembiayaan KPR, appraisal sertifikat & akad kredit instan', nilaiPlatform: 'Integrasi pengajuan KPR & peninjauan sertifikat otomatis', vectorIcon: '🏦', iconBg: 'bg-gradient-to-br from-emerald-600 to-green-700 text-white' }
+    ];
+
+    const INITIAL_NEEDS_CARDS = [
+      {
+        id: 'need-01',
+        title: 'Proposal Bisnis Investasi Properti (Profit 25%)',
+        badge: '📊 Joint Venture Investment',
+        badgeColor: 'bg-teal-50 text-teal-800 border-teal-200',
+        profitTag: 'Profit 25% p.a.',
+        location: 'Makassar & Maros, Sulawesi Selatan',
+        image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80',
+        description: 'Proposal kerjasama investasi pengembangan lahan & cluster perumahan komersial dengan skema bagi hasil terjamin via NARA Escrow.',
+        actionText: 'Masuk NARA Escrow Deal Room'
+      },
+      {
+        id: 'need-02',
+        title: 'Mini Investasi Pengembangan Blok Perumahan',
+        badge: '💎 Mini Investment',
+        badgeColor: 'bg-amber-50 text-amber-800 border-amber-200',
+        profitTag: 'Profit 20% / 6 Bulan',
+        location: 'Kawasan Strategis Maros & BSD',
+        image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=800&q=80',
+        description: 'Peluang dana investasi mini blok hunian siap bangun dengan penjaminan unit sertifikat & legalitas SHM terlindungi.',
+        actionText: 'Masuk NARA Escrow Deal Room'
+      },
+      {
+        id: 'need-03',
+        title: 'Promo Jasa Agen Marketing (Diskon 50%)',
+        badge: '📢 Marketing Special Promo',
+        badgeColor: 'bg-[#1ac1b9]/10 text-[#0d9488] border-[#1ac1b9]/30',
+        profitTag: 'Diskon Komisi 50%',
+        location: 'Nasional / Seluruh Indonesia',
+        image: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=800&q=80',
+        description: 'Layanan agen pemasaran & broker properti profesional NARA dengan potongan komisi penanganan 50% dan garansi listing tayang cepat.',
+        actionText: 'Ambil Promo Marketing'
+      },
+      {
+        id: 'need-04',
+        title: '5 Unit Kerjasama Perumahan Sunrise City Maros',
+        badge: '🏡 Developer Special Project',
+        badgeColor: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+        profitTag: 'Profit Hingga Rp 5 Jt / Unit',
+        location: 'Sunrise City Maros, Sulawesi Selatan',
+        image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80',
+        description: 'Kerjasama eksklusif 5 unit hunian siap huni di Perumahan Sunrise City Maros dengan bagi hasil profit hingga Rp 5 Jt per unit terbayar.',
+        actionText: 'Masuk NARA Escrow Deal Room'
+      },
+      {
+        id: 'need-05',
+        title: 'Promo Jasa Arsitektur Hanya 6 Jt (Type 84)',
+        badge: '📐 Special Design Offer',
+        badgeColor: 'bg-blue-50 text-blue-800 border-blue-200',
+        profitTag: 'Hanya Rp 6.000.000',
+        location: 'Desain Online / Wilayah Indonesia',
+        image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80',
+        description: 'Paket gambar kerja lengkap arsitek, struktur PBG/IMB, & render 3D visualisasi rumah mewah type 84 m² hanya seharga Rp 6 Juta.',
+        actionText: 'Ambil Promo Arsitektur'
+      }
+    ];
+
+    const INITIAL_PARTNERS = [
+      { id: 'btn', name: 'Bank BTN', label: 'Bank BTN', icon: '🏠', isSvg: true, type: 'btn' },
+      { id: 'mandiri', name: 'Bank Mandiri', label: 'Bank Mandiri', icon: '🏦', isSvg: true, type: 'mandiri' },
+      { id: 'bri', name: 'Bank BRI', label: 'Bank BRI', icon: '🏦', isSvg: true, type: 'bri' },
+      { id: 'bni', name: 'Bank BNI', label: 'Bank BNI', icon: '🏦', isSvg: true, type: 'bni' },
+      { id: 'sig', name: 'Semen Indonesia (SIG)', label: 'SIG', icon: '🏗️', isSvg: true, type: 'sig' },
+      { id: 'cks', name: 'PT. Catur Kencana Sakti', label: 'PT. Catur Kencana Sakti', icon: '🏢' },
+      { id: 'ppat', name: 'Notaris PPAT', label: 'Notaris PPAT', icon: '📜' },
+      { id: 'harapanjaya', name: 'PT. Harapan Jaya Brand', label: 'PT. Harapan Jaya Brand', icon: '🔨' },
+      { id: 'kalla', name: 'Kalla Beton', label: 'Kalla Beton', icon: '🧱' }
+    ];
+
+    const INITIAL_PROJECTS = [
+      { id: 'proj-01', title: 'NARA Green Residence BSD - Cluster Premium 45 Unit', category: 'Pengembangan Properti (Joint Venture)', location: 'BSD City, Tangerang Selatan', targetInvestment: 12500000000, collectedInvestment: 8750000000, projectedRoi: '16.5% p.a.', riskScore: 'Low Risk (94/100)', assignedNotary: 'Notaris Hj. Ratna Juwita, S.H., M.Kn.', assignedContractor: 'PT Karya Beton Nusantara', image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80', description: 'Proyek hunian minimalis modern 2 lantai berbasis smart eco-living di lokasi strategis BSD. Membutuhkan tambahan dana investasi termin konstruksi tahap 2.' },
+      { id: 'proj-02', title: 'Lahan Komersial Metland Cyber City 1.200 m²', category: 'Penjualan Lahan Strategic / JV', location: 'Kembangan, Jakarta Barat', targetInvestment: 24000000000, collectedInvestment: 24000000000, projectedRoi: '18.0% p.a.', riskScore: 'Low Risk (98/100)', assignedNotary: 'Notaris Dr. Hendra Wijaya, S.H.', assignedContractor: 'Pending Bidding', image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80', description: 'Lahan hook komersial sangat prospektif untuk ruko modern 4 lantai dan mini warehouse logistics center.' },
+      { id: 'proj-03', title: 'Renovasi & Expansion Hotel Boutique Seminyak Bali', category: 'Konstruksi & Fit-Out Hotel', location: 'Seminyak, Badung, Bali', targetInvestment: 6800000000, collectedInvestment: 4500000000, projectedRoi: '14.2% p.a.', riskScore: 'Moderate (88/100)', assignedNotary: 'Notaris I Made Suardana, S.H.', assignedContractor: 'PT Bali Dewata Konstruksi', image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80', description: 'Pengembangan 16 suite kamar baru dan rooftop pool bar. Dana escrow digunakan untuk jaminan pembayaran termin kontraktor & toko bangunan.' }
+    ];
+
+    const CONTRACTORS = [
+      { id: 'kont-01', companyName: 'PT Karya Beton Nusantara', specialty: 'General Contractor Building & Structure', rating: 4.9, completedProjects: 42, license: 'SBU Kualifikasi Besar (B1)', location: 'Jakarta Selatan', completedValue: 'Rp 180+ Miliar', naraBadge: 'Verified Grade A', image: 'https://images.unsplash.com/photo-1541888946425-d0fbb186a5b7?auto=format&fit=crop&w=600&q=80' },
+      { id: 'kont-02', companyName: 'PT Bali Dewata Konstruksi', specialty: 'Resort, Villa, & Luxury Hospitality', rating: 4.85, completedProjects: 28, license: 'SBU Kualifikasi Menengah (M1)', location: 'Denpasar, Bali', completedValue: 'Rp 95 Miliar', naraBadge: 'Verified Grade A', image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80' }
+    ];
+
+    const MATERIAL_SUPPLIERS = [
+      { id: 'sup-01', storeName: 'Depo Bangunan & Material BSD Utama', category: 'Semen, Besi Beton, Bata Ringan, & Keramik', location: 'BSD, Tangerang Selatan', paymentTerm: 'Integrasi Escrow PO (H+1 Delivery)', itemsCount: 1450, image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80' },
+      { id: 'sup-02', storeName: 'Toko Material Cahaya Bangunan Ciledug', category: 'Kayu Perkakas, Cat Industri, Atap Baja Ringan', location: 'Tangerang', paymentTerm: 'Escrow NARA Term Payment', itemsCount: 820, image: 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=600&q=80' }
+    ];
+
+    const NOTARIES = [
+      { id: 'not-01', name: 'Notaris Hj. Ratna Juwita, S.H., M.Kn.', jurisdiction: 'Tangerang Selatan & DKI Jakarta', specialization: 'Akta Perjanjian Investasi, SKMHT, Hak Tanggungan', experience: '18 Tahun', verifiedDealsOnNara: 54, rating: 5.0, image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80' },
+      { id: 'not-02', name: 'Notaris Dr. Hendra Wijaya, S.H.', jurisdiction: 'Jakarta Barat & Tangerang', specialization: 'PPJB, Pendirian PT Developer, Legal Due Diligence', experience: '22 Tahun', verifiedDealsOnNara: 82, rating: 4.95, image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=200&q=80' }
+    ];
+
+    // Helper Renderer for Partner Logo Badges
+    function renderPartnerBadge(partner) {
+      if (partner.type === 'btn') {
+        return (
+          <div className="flex items-center gap-1.5">
+            <span className="text-[#00529c] font-black text-sm tracking-tighter">btn</span>
+            <span className="w-2 h-2 rounded-full bg-[#ed1c24] -ml-0.5"></span>
+            <span className="text-[10px] text-slate-400 font-extrabold ml-1">Bank BTN</span>
+          </div>
+        );
+      }
+      if (partner.type === 'mandiri') {
+        return (
+          <div className="flex items-center gap-1">
+            <span className="text-[#003b6e] font-black text-sm tracking-tight">mandırı</span>
+            <svg className="w-5 h-3 text-[#fdb813]" viewBox="0 0 24 14" fill="currentColor">
+              <path d="M0 7C4 3 8 11 12 7C16 3 20 11 24 7V14H0V7Z" />
+            </svg>
+          </div>
+        );
+      }
+      if (partner.type === 'bri') {
+        return (
+          <div className="flex items-center gap-1.5">
+            <div className="bg-[#00529c] text-white px-1.5 py-0.5 rounded font-black text-xs tracking-tighter shadow-xs">
+              BRI
+            </div>
+            <span className="text-[#00529c] font-black text-xs">Bank BRI</span>
+          </div>
+        );
+      }
+      if (partner.type === 'bni') {
+        return (
+          <div className="flex items-center gap-1.5">
+            <div className="bg-[#f26522] text-white px-1.5 py-0.5 rounded font-black text-xs shadow-xs">
+              46
+            </div>
+            <span className="text-[#00529c] font-black text-xs">BNI</span>
+          </div>
+        );
+      }
+      if (partner.type === 'sig') {
+        return (
+          <div className="flex items-center gap-1.5">
+            <div className="bg-[#e11b22] text-white px-1.5 py-0.5 rounded font-black text-xs shadow-xs">
+              SIG
+            </div>
+            <span className="text-slate-900 font-extrabold text-xs">Semen Indonesia</span>
+          </div>
+        );
+      }
+      return (
+        <div className="flex items-center gap-1.5">
+          <span className="text-base">{partner.icon || '🤝'}</span>
+          <span className="text-xs font-extrabold text-slate-900 whitespace-nowrap">{partner.name}</span>
+        </div>
+      );
+    }
+
+    // --- MAIN APP COMPONENT ---
+    function App() {
+      const [activeTab, setActiveTab] = useState('flow');
+      const [selectedActor, setSelectedActor] = useState('investor');
+      const [projectsList, setProjectsList] = useState(INITIAL_PROJECTS);
+      const [activeCategory, setActiveCategory] = useState('projects');
+      const [globalSearchQuery, setGlobalSearchQuery] = useState('');
+      const [searchCategory, setSearchCategory] = useState('all');
+
+      // CMS State Managed Content
+      const [actorsList, setActorsList] = useState(INITIAL_ACTORS);
+      const [needsCardsList, setNeedsCardsList] = useState(INITIAL_NEEDS_CARDS);
+      const [partnersList, setPartnersList] = useState(INITIAL_PARTNERS);
+
+      // Hero Config State
+      const [heroConfig, setHeroConfig] = useState({
+        headingPre: 'Terhubung dengan mitra yang tepat,',
+        headingHighlight: 'capai kesepakatan yang menguntungkan.',
+        description: 'NLD Hub mempertemukan investor, pemilik lahan, kontraktor, toko bangunan, notaris, dan masyarakat umum dalam satu platform Nara Ecosystem.',
+        gradientBg: 'from-[#0f4c4a] via-[#136663] to-[#0d7873]'
+      });
+
+      // Modals State
+      const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
+      const [isListingModalOpen, setIsListingModalOpen] = useState(false);
+      const [isCareModalOpen, setIsCareModalOpen] = useState(false);
+      const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
+      const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+      const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+
+      // CMS Dashboard Modal State
+      const [isCmsModalOpen, setIsCmsModalOpen] = useState(false);
+      const [cmsTab, setCmsTab] = useState('hero'); // 'hero', 'deals', 'actors', 'partners'
+      const [cmsToast, setCmsToast] = useState('');
+
+      // CMS New Deal Card Form State
+      const [newDealCard, setNewDealCard] = useState({
+        title: '',
+        badge: '📊 New Special Offer',
+        badgeColor: 'bg-teal-50 text-teal-800 border-teal-200',
+        profitTag: 'Profit 20%',
+        location: 'Makassar',
+        image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80',
+        description: '',
+        actionText: 'Masuk NARA Escrow Deal Room'
+      });
+
+      // CMS New Partner Form State
+      const [newPartner, setNewPartner] = useState({
+        name: '',
+        icon: '🤝'
+      });
+
+      // Login / Register Form state
+      const [loginRole, setLoginRole] = useState('investor');
+      const [regRole, setRegRole] = useState('developer');
+
+      // New Listing Form State
+      const [newListing, setNewListing] = useState({
+        title: '',
+        category: 'Pengembangan Properti (Joint Venture)',
+        location: '',
+        targetInvestment: '10000000000',
+        projectedRoi: '16.0% p.a.',
+        description: '',
+        image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=800&q=80'
+      });
+
+      // Calculator states
+      const [calcValue, setCalcValue] = useState(10000000000);
+      const [calcRate, setCalcRate] = useState(7.5);
+
+      useEffect(() => {
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+
+        // Fetch live data directly from Laravel REST API Backend (http://127.0.0.1:8000/api/v1/)
+        const fetchLaravelApiData = async () => {
+          try {
+            const [resActors, resDeals, resPartners, resProjects] = await Promise.all([
+              fetch('http://127.0.0.1:8000/api/v1/actors').then(r => r.json()).catch(() => null),
+              fetch('http://127.0.0.1:8000/api/v1/deals-promos').then(r => r.json()).catch(() => null),
+              fetch('http://127.0.0.1:8000/api/v1/partners').then(r => r.json()).catch(() => null),
+              fetch('http://127.0.0.1:8000/api/v1/projects').then(r => r.json()).catch(() => null),
+            ]);
+
+            if (resActors && resActors.data && resActors.data.length > 0) {
+              setActorsList(resActors.data);
+            }
+            if (resDeals && resDeals.data && resDeals.data.length > 0) {
+              setNeedsCardsList(resDeals.data.map(d => ({
+                id: d.deal_code || d.id,
+                title: d.title,
+                badge: d.badge,
+                badgeColor: d.badge_color,
+                profitTag: d.profit_tag,
+                location: d.location,
+                image: d.image,
+                description: d.description,
+                actionText: d.action_text
+              })));
+            }
+            if (resPartners && resPartners.data && resPartners.data.length > 0) {
+              setPartnersList(resPartners.data);
+            }
+            if (resProjects && resProjects.data && resProjects.data.length > 0) {
+              setProjectsList(resProjects.data.map(p => ({
+                id: p.project_code || p.id,
+                title: p.title,
+                category: p.category,
+                location: p.location,
+                targetInvestment: Number(p.target_investment),
+                collectedInvestment: Number(p.collected_investment),
+                projectedRoi: p.projected_roi,
+                riskScore: p.risk_score,
+                assignedNotary: p.assigned_notary,
+                assignedContractor: p.assigned_contractor,
+                image: p.image,
+                description: p.description
+              })));
+            }
+          } catch (e) {
+            console.log('Using local fallback state', e);
+          }
+        };
+
+        fetchLaravelApiData();
+
+        // Auto-sync CMS settings saved from admin.html
+        const syncCmsData = () => {
+          const savedData = localStorage.getItem('nara_cms_config');
+          if (savedData) {
+            try {
+              const parsed = JSON.parse(savedData);
+              if (parsed.heroConfig) setHeroConfig(parsed.heroConfig);
+              if (parsed.needsCardsList) setNeedsCardsList(parsed.needsCardsList);
+              if (parsed.partnersList) setPartnersList(parsed.partnersList);
+            } catch(e) {
+              console.error('Error syncing CMS data', e);
+            }
+          }
+        };
+
+        syncCmsData();
+        window.addEventListener('storage', syncCmsData);
+        return () => window.removeEventListener('storage', syncCmsData);
+      }, []);
+
+      const showToast = (msg) => {
+        setCmsToast(msg);
+        setTimeout(() => setCmsToast(''), 3000);
+      };
+
+      // Filtered Lists based on Search
+      const filteredProjectsList = projectsList.filter(p => 
+        (searchCategory === 'all' || searchCategory === 'projects') &&
+        (p.title.toLowerCase().includes(globalSearchQuery.toLowerCase()) ||
+         p.location.toLowerCase().includes(globalSearchQuery.toLowerCase()))
+      );
+
+      // Handle Login
+      const handleLoginSubmit = (e) => {
+        e.preventDefault();
+        setSelectedActor(loginRole);
+        setIsLoginModalOpen(false);
+        alert('🎉 Berhasil Masuk ke Dashboard NARA sebagai ' + actorsList.find(a => a.id === loginRole)?.name + '!');
+      };
+
+      // Handle Register
+      const handleRegisterSubmit = (e) => {
+        e.preventDefault();
+        setSelectedActor(regRole);
+        setIsRegisterModalOpen(false);
+        alert('🎉 Pendaftaran Berhasil! Akun Anda telah aktif dan masuk ke tahap Audit Verifikasi Legalitas NARA.');
+      };
+
+      // Handle Submit Listing
+      const handleSubmitListing = (e) => {
+        e.preventDefault();
+        if (!newListing.title || !newListing.location) return;
+
+        const createdItem = {
+          id: 'proj-' + (projectsList.length + 1),
+          title: newListing.title,
+          category: newListing.category,
+          location: newListing.location,
+          targetInvestment: Number(newListing.targetInvestment),
+          collectedInvestment: 0,
+          projectedRoi: newListing.projectedRoi,
+          riskScore: 'Pending Verification (NARA Hub)',
+          assignedNotary: 'Tim Notaris NARA Allocated',
+          assignedContractor: 'Open Bidding Kontraktor',
+          image: newListing.image || 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=800&q=80',
+          description: newListing.description || 'Listing baru yang terdaftar di NARA Ecosystem.'
+        };
+
+        setProjectsList([createdItem, ...projectsList]);
+        setIsListingModalOpen(false);
+        setActiveTab('marketplace');
+        setActiveCategory('projects');
+        alert('🎉 Listing Berhasil Ditayangkan di Platform NARA! Tim NARA akan melakukan audit verifikasi dokumen.');
+      };
+
+      // CMS Handlers
+      const handleAddDealCard = (e) => {
+        e.preventDefault();
+        if (!newDealCard.title) return;
+        const newItem = {
+          id: 'need-' + Date.now(),
+          ...newDealCard
+        };
+        setNeedsCardsList([newItem, ...needsCardsList]);
+        setNewDealCard({
+          title: '',
+          badge: '📊 New Special Offer',
+          badgeColor: 'bg-teal-50 text-teal-800 border-teal-200',
+          profitTag: 'Profit 20%',
+          location: 'Makassar',
+          image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80',
+          description: '',
+          actionText: 'Masuk NARA Escrow Deal Room'
+        });
+        showToast('✅ Deal Promo Card Baru Berhasil Ditambahkan ke Halaman Utama!');
+      };
+
+      const handleDeleteDealCard = (id) => {
+        setNeedsCardsList(needsCardsList.filter(c => c.id !== id));
+        showToast('🗑️ Card Promosi Berhasil Dihapus!');
+      };
+
+      const handleAddPartner = (e) => {
+        e.preventDefault();
+        if (!newPartner.name) return;
+        const newItem = {
+          id: 'partner-' + Date.now(),
+          name: newPartner.name,
+          label: newPartner.name,
+          icon: newPartner.icon || '🤝'
+        };
+        setPartnersList([...partnersList, newItem]);
+        setNewPartner({ name: '', icon: '🤝' });
+        showToast('✅ Logo Mitra Baru Berhasil Ditambahkan ke Marquee Slider!');
+      };
+
+      const handleDeletePartner = (id) => {
+        setPartnersList(partnersList.filter(p => p.id !== id));
+        showToast('🗑️ Logo Mitra Berhasil Dihapus dari Slider!');
+      };
+
+      // Commission calculations
+      const naraFee = Math.round((calcValue * calcRate) / 100);
+      const netDisbursed = calcValue - naraFee;
+      const contractorShare = Math.round(netDisbursed * 0.55);
+      const materialShare = Math.round(netDisbursed * 0.35);
+      const legalNotaryShare = Math.round(netDisbursed * 0.10);
+
+      return (
+        <div className="min-h-screen flex flex-col justify-between bg-white text-slate-900">
+          
+          {/* HEADER & NAV */}
+          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 shadow-xs">
+            
+            {/* TOP BAR 1: TOKOPEDIA-STYLE MINIMALIST LIGHT SLATE */}
+            <div className="bg-slate-100/80 border-b border-slate-200/80 py-1.5 px-4 text-xs">
+              <div className="max-w-7xl mx-auto flex items-center justify-end gap-6 font-medium text-slate-600">
+                <button 
+                  onClick={() => setIsAboutModalOpen(true)}
+                  className="hover:text-[#0d9488] transition-colors cursor-pointer"
+                >
+                  Tentang Nara Ecosystem
+                </button>
+
+                <button 
+                  onClick={() => setIsListingModalOpen(true)}
+                  className="hover:text-[#0d9488] transition-colors cursor-pointer"
+                >
+                  Mulai Pasang Listing
+                </button>
+
+                <button 
+                  onClick={() => setIsCareModalOpen(true)}
+                  className="hover:text-[#0d9488] transition-colors cursor-pointer"
+                >
+                  Nara Care
+                </button>
+              </div>
+            </div>
+
+            {/* MAIN HEADER BAR: LOGO GAMBAR RESMI NARAECOSYSTEM + KATEGORI + PENCARIAN + MASUK & DAFTAR */}
+            <div className="bg-white border-b border-slate-200 py-2.5 px-4">
+              <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+                
+                {/* Left: Logo Gambar Resmi NaraEcosystem */}
+                <div className="flex items-center cursor-pointer shrink-0" onClick={() => setIsAboutModalOpen(true)}>
+                  <img 
+                    src="./nara-logo.png" 
+                    alt="NaraEcosystem® Logo" 
+                    className="h-10 sm:h-12 w-auto object-contain"
+                  />
+                </div>
+
+                {/* Center: Kolom Pencarian Utama */}
+                <div className="relative flex-1 max-w-2xl w-full">
+                  <input 
+                    type="text"
+                    placeholder="Cari lahan, rumah, jasa kontraktor, toko material, atau notaris..."
+                    value={globalSearchQuery}
+                    onChange={(e) => {
+                      setGlobalSearchQuery(e.target.value);
+                      if (e.target.value.length > 0) setActiveTab('marketplace');
+                    }}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-4 pr-14 py-2.5 text-xs font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1ac1b9] shadow-sm"
+                  />
+                  <button 
+                    onClick={() => setActiveTab('marketplace')}
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-[#1ac1b9] hover:bg-[#16a39d] text-slate-950 font-extrabold px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer shadow-sm"
+                  >
+                    Cari
+                  </button>
+                </div>
+
+                {/* Right: Panel Tombol MASUK & DAFTAR (STYLE TOKOPEDIA) */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <button 
+                    onClick={() => setIsLoginModalOpen(true)}
+                    className="px-4 py-1.5 bg-white hover:bg-teal-50/50 text-[#0d9488] font-extrabold text-xs rounded-lg border border-[#0d9488] transition-all cursor-pointer"
+                  >
+                    Masuk
+                  </button>
+
+                  <button 
+                    onClick={() => setIsRegisterModalOpen(true)}
+                    className="px-4 py-1.5 bg-[#1ac1b9] hover:bg-[#16a39d] text-slate-950 font-extrabold text-xs rounded-lg shadow-sm transition-all cursor-pointer"
+                  >
+                    Daftar
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+          </header>
+
+          {/* MAIN CONTENT */}
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-1">
+            
+            {/* TAB 1: FLOW VISUALIZER & HERO */}
+            {activeTab === 'flow' && (
+              <div className="space-y-6">
+                
+                {/* HERO BANNER SECTION (DYNAMICALLY MANAGED BY CMS) */}
+                <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-r ${heroConfig.gradientBg} border border-teal-600/30 p-6 lg:p-7 shadow-xl text-white`}>
+                  
+                  {/* Ambient Soft Glows */}
+                  <div className="absolute top-0 right-0 w-80 h-80 bg-[#1ac1b9]/20 rounded-full blur-3xl pointer-events-none"></div>
+                  <div className="absolute bottom-0 left-0 w-80 h-80 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative z-10">
+                    
+                    {/* Kolom Kiri: Ucapan Pembuka & Action Button */}
+                    <div className="lg:col-span-7 space-y-3.5">
+                      
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-950/60 border border-[#1ac1b9]/40 text-amber-300 text-[11px] font-extrabold uppercase tracking-wide">
+                        <span>🤝</span>
+                        <span>EKOSISTEM PROPERTI & KONSTRUKSI TERPADU</span>
+                      </div>
+
+                      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black leading-tight tracking-tight text-white">
+                        {heroConfig.headingPre} <span className="text-amber-300">{heroConfig.headingHighlight}</span>
+                      </h1>
+
+                      <p className="text-xs sm:text-sm text-teal-50 leading-relaxed font-medium">
+                        {heroConfig.description}
+                      </p>
+
+                      <div className="bg-teal-950/50 backdrop-blur px-3.5 py-2.5 rounded-xl border border-teal-400/30 flex items-center gap-2.5 text-xs text-teal-100">
+                        <span className="text-base">🛡️</span>
+                        <div>
+                          <span className="font-bold text-amber-300">Penjaminan Transaksi NARA: </span>
+                          <span className="text-slate-100">Rekening Bersama Escrow & Risk Management Legal 3-Lapis.</span>
+                        </div>
+                      </div>
+
+                      <div className="pt-1 flex gap-2">
+                        <button 
+                          onClick={() => setIsListingModalOpen(true)}
+                          className="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs shadow-md shadow-amber-500/20 transition-all cursor-pointer flex items-center gap-2"
+                        >
+                          <span>➕ Mulai Pasang Listing Properti/Jasa</span>
+                        </button>
+                      </div>
+
+                    </div>
+
+                    {/* Kolom Kanan: Gambar Jabat Tangan Ringkas */}
+                    <div className="lg:col-span-5 relative flex justify-center">
+                      <div className="relative w-full max-w-sm">
+                        <div className="relative rounded-xl overflow-hidden border-2 border-amber-300/40 shadow-lg group">
+                          <img 
+                            src="https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=800&q=80" 
+                            alt="NARA Deal Closing Handshake" 
+                            className="w-full h-48 sm:h-52 object-cover transform group-hover:scale-105 transition-transform duration-500"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* 12 Categories List with Pure Vector Avatar Badges (DYNAMICALLY MANAGED BY CMS) */}
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900 mb-4">Cek Kategori Kamu Di Sini</h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+                    {actorsList.map(actor => (
+                      <div 
+                        key={actor.id} 
+                        className="glass-panel p-4 space-y-2.5 hover:border-[#1ac1b9] hover:shadow-md transition-all cursor-pointer group" 
+                        onClick={() => {
+                          setSelectedActor(actor.id);
+                          setActiveTab('marketplace');
+                        }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-2xl ${actor.iconBg} flex items-center justify-center text-lg shadow-sm border border-white/20 shrink-0 group-hover:scale-105 transition-transform`}>
+                            {actor.vectorIcon}
+                          </div>
+                          <div>
+                            <h3 className="font-extrabold text-xs text-slate-900 group-hover:text-[#0d9488] transition-colors">{actor.shortName}</h3>
+                            <span className="text-[10px] text-slate-500 font-semibold">Verifikasi NARA Ready</span>
+                          </div>
+                        </div>
+                        <p className="text-[11px] text-slate-600 leading-snug line-clamp-2">{actor.kebutuhan}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* SECTION: "LIHAT KEBUTUHANMU DI SINI" (DYNAMICALLY MANAGED BY CMS) */}
+                <div className="glass-panel p-6 space-y-6">
+                  <div className="border-b border-slate-200 pb-4">
+                    <span className="text-xs font-bold text-teal-700 uppercase tracking-wider">NARA Hub Deals & Promosi</span>
+                    <h2 className="text-2xl font-black text-slate-900 mt-1">Lihat Kebutuhanmu Di Sini</h2>
+                  </div>
+
+                  {/* Grid Deals Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {needsCardsList.map(card => (
+                      <div 
+                        key={card.id} 
+                        className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-[#1ac1b9] transition-all flex flex-col justify-between group"
+                      >
+                        <div>
+                          {/* Image Banner */}
+                          <div className="relative h-44 overflow-hidden">
+                            <img 
+                              src={card.image} 
+                              alt={card.title} 
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                            <div className="absolute top-3 left-3">
+                              <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-lg border shadow-sm ${card.badgeColor}`}>
+                                {card.badge}
+                              </span>
+                            </div>
+                            <div className="absolute bottom-3 right-3">
+                              <span className="bg-slate-950/80 backdrop-blur text-amber-300 text-xs font-black px-2.5 py-1 rounded-lg border border-amber-300/40">
+                                {card.profitTag}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Card Content */}
+                          <div className="p-4 space-y-2.5">
+                            <h3 className="font-extrabold text-sm text-slate-900 group-hover:text-[#0d9488] transition-colors leading-snug">
+                              {card.title}
+                            </h3>
+
+                            <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
+                              <span>📍</span>
+                              <span>{card.location}</span>
+                            </div>
+
+                            <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">
+                              {card.description}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Card Footer Button */}
+                        <div className="p-4 pt-0">
+                          <button 
+                            onClick={() => setActiveTab('escrow')}
+                            className="w-full py-2.5 bg-[#1ac1b9] hover:bg-[#16a39d] text-slate-950 font-extrabold text-xs rounded-xl shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2"
+                          >
+                            <span>🔒</span>
+                            <span>{card.actionText}</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {/* TAB 2: MARKETPLACE */}
+            {activeTab === 'marketplace' && (
+              <div className="space-y-6">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-4">
+                  <div>
+                    <span className="text-xs font-bold text-teal-700 uppercase">NARA Network</span>
+                    <h1 className="text-2xl font-black text-slate-900">Marketplace Multi-Aktor Properti & Konstruksi</h1>
+                  </div>
+                  <div className="flex gap-2 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs">
+                    <button 
+                      onClick={() => setActiveCategory('projects')}
+                      className={`px-3 py-1.5 rounded-lg font-bold ${activeCategory === 'projects' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-700'}`}
+                    >
+                      Investasi & Lahan
+                    </button>
+                    <button 
+                      onClick={() => setActiveCategory('contractors')}
+                      className={`px-3 py-1.5 rounded-lg font-bold ${activeCategory === 'contractors' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-700'}`}
+                    >
+                      Kontraktor
+                    </button>
+                    <button 
+                      onClick={() => setActiveCategory('materials')}
+                      className={`px-3 py-1.5 rounded-lg font-bold ${activeCategory === 'materials' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-700'}`}
+                    >
+                      Toko Bangunan
+                    </button>
+                    <button 
+                      onClick={() => setActiveCategory('legal')}
+                      className={`px-3 py-1.5 rounded-lg font-bold ${activeCategory === 'legal' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-700'}`}
+                    >
+                      Notaris & Legal
+                    </button>
+                  </div>
+                </div>
+
+                {/* Projects */}
+                {activeCategory === 'projects' && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {filteredProjectsList.map(proj => (
+                      <div key={proj.id} className="glass-panel overflow-hidden space-y-3 p-4 flex flex-col justify-between">
+                        <div className="space-y-3">
+                          <img src={proj.image} alt={proj.title} className="w-full h-40 object-cover rounded-xl border border-slate-200" />
+                          <span className="bg-amber-50 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded border border-amber-200">
+                            {proj.category}
+                          </span>
+                          <h3 className="text-sm font-bold text-slate-900">{proj.title}</h3>
+                          <p className="text-xs text-slate-600 line-clamp-2">{proj.description}</p>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs space-y-1">
+                            <div className="flex justify-between"><span className="text-slate-500">Target:</span><span className="text-amber-700 font-bold">Rp {(proj.targetInvestment/1000000000).toFixed(1)} M</span></div>
+                            <div className="flex justify-between"><span className="text-slate-500">ROI:</span><span className="text-teal-700 font-bold">{proj.projectedRoi}</span></div>
+                          </div>
+                          <button 
+                            onClick={() => setActiveTab('escrow')}
+                            className="w-full py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-sm"
+                          >
+                            Masuk NARA Escrow Deal Room
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Contractors */}
+                {activeCategory === 'contractors' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {CONTRACTORS.map(c => (
+                      <div key={c.id} className="glass-panel p-5 space-y-3">
+                        <div className="flex gap-4">
+                          <img src={c.image} className="w-16 h-16 rounded-xl object-cover border border-slate-200" />
+                          <div>
+                            <h3 className="font-bold text-sm text-slate-900">{c.companyName}</h3>
+                            <p className="text-xs text-amber-700 font-semibold">{c.specialty}</p>
+                            <p className="text-[11px] text-slate-500">Lisensi: {c.license}</p>
+                          </div>
+                        </div>
+                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs flex justify-around text-center">
+                          <div><span className="text-[10px] text-slate-500 block">Rating</span><span className="text-amber-700 font-bold">⭐ {c.rating}</span></div>
+                          <div><span className="text-[10px] text-slate-500 block">Proyek</span><span className="text-slate-900 font-bold">{c.completedProjects}</span></div>
+                          <div><span className="text-[10px] text-slate-500 block">Total Track</span><span className="text-teal-700 font-bold">{c.completedValue}</span></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Materials */}
+                {activeCategory === 'materials' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {MATERIAL_SUPPLIERS.map(s => (
+                      <div key={s.id} className="glass-panel p-5 space-y-3">
+                        <div className="flex gap-4">
+                          <img src={s.image} className="w-16 h-16 rounded-xl object-cover border border-slate-200" />
+                          <div>
+                            <h3 className="font-bold text-sm text-slate-900">{s.storeName}</h3>
+                            <p className="text-xs text-slate-700">{s.category}</p>
+                            <p className="text-[11px] text-teal-700 font-bold">{s.paymentTerm}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Legal */}
+                {activeCategory === 'legal' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {NOTARIES.map(n => (
+                      <div key={n.id} className="glass-panel p-5 space-y-3">
+                        <div className="flex gap-4 items-center">
+                          <img src={n.image} className="w-14 h-14 rounded-full object-cover border border-teal-500" />
+                          <div>
+                            <h3 className="font-bold text-sm text-slate-900">{n.name}</h3>
+                            <p className="text-xs text-amber-700 font-bold">{n.jurisdiction}</p>
+                            <p className="text-[11px] text-slate-500">⭐ {n.rating} | {n.experience}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+              </div>
+            )}
+
+            {/* TAB 3: VERIFICATION */}
+            {activeTab === 'verification' && (
+              <div className="space-y-6">
+                <div className="border-b border-slate-200 pb-4">
+                  <span className="text-xs font-bold text-teal-700 uppercase">Risk Management System</span>
+                  <h1 className="text-2xl font-black text-slate-900">Verifikasi Legalitas & Risk Auditing Lahan</h1>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="glass-panel p-5 space-y-3">
+                    <span className="text-xs text-amber-700 font-bold uppercase">Lapis 1: Sertifikat</span>
+                    <h3 className="font-bold text-slate-900 text-sm">Auditing Pertanahan & SHM</h3>
+                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1 text-slate-700">
+                      <p>✓ Cek SHM BPN Online Valid</p>
+                      <p>✓ Tata Ruang Zooning Valid</p>
+                      <p>✓ Pajak PBB Lunas</p>
+                    </div>
+                  </div>
+
+                  <div className="glass-panel p-5 space-y-3">
+                    <span className="text-xs text-blue-700 font-bold uppercase">Lapis 2: Perizinan</span>
+                    <h3 className="font-bold text-slate-900 text-sm">Izin Bangunan PBG & AMDAL</h3>
+                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1 text-slate-700">
+                      <p>✓ PBG Dinas Cipta Karya Approved</p>
+                      <p>✓ Dokumen AMDAL / UKL-UPL Clear</p>
+                      <p>✓ Gambar TABG Terverifikasi</p>
+                    </div>
+                  </div>
+
+                  <div className="glass-panel p-5 space-y-3">
+                    <span className="text-xs text-purple-700 font-bold uppercase">Lapis 3: Notaris</span>
+                    <h3 className="font-bold text-slate-900 text-sm">Pengikatan Legal Escrow</h3>
+                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1 text-slate-700">
+                      <p>✓ Akta Perjanjian Investasi Signed</p>
+                      <p>✓ Rekening Bersama Escrow Active</p>
+                      <p>✓ Penjaminan Restitusi Wanprestasi</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 4: ESCROW */}
+            {activeTab === 'escrow' && (
+              <div className="space-y-6">
+                <div className="border-b border-slate-200 pb-4 flex justify-between items-center">
+                  <div>
+                    <span className="text-xs font-bold text-teal-700 uppercase">NARA Escrow Account</span>
+                    <h1 className="text-2xl font-black text-slate-900">Escrow & Deal Room Simulator</h1>
+                  </div>
+                  <button 
+                    onClick={() => setIsCalculatorOpen(true)}
+                    className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg shadow-sm"
+                  >
+                    🧮 Calculator Fee
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="glass-panel p-4">
+                    <span className="text-[10px] text-slate-500 uppercase font-bold">Total Deal</span>
+                    <p className="text-xl font-black text-slate-900 mt-1">Rp 10.000.000.000</p>
+                  </div>
+                  <div className="glass-panel-gold p-4">
+                    <span className="text-[10px] text-amber-800 uppercase font-bold">Fee NARA</span>
+                    <p className="text-xl font-black text-amber-700 mt-1">Rp 750.000.000</p>
+                  </div>
+                  <div className="glass-panel-emerald p-4">
+                    <span className="text-[10px] text-teal-800 uppercase font-bold">Status Escrow</span>
+                    <p className="text-xl font-black text-teal-700 mt-1">Rp 2,5 M Released</p>
+                  </div>
+                  <div className="glass-panel p-4">
+                    <span className="text-[10px] text-slate-500 uppercase font-bold">Nomor Escrow</span>
+                    <p className="text-xs font-mono font-bold text-slate-900 mt-1 bg-slate-100 p-1 rounded border border-slate-200">NARA-ESCROW-8849-BCA</p>
+                  </div>
+                </div>
+
+                <div className="glass-panel p-6 space-y-4">
+                  <h3 className="font-bold text-slate-900 text-base">Jadwal Pencairan Dana Milestone (Termin)</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div className="p-3 bg-teal-50 rounded-xl border border-teal-200">
+                      <div className="flex justify-between font-bold text-teal-800 mb-1"><span>Termin 1: Legal Audit & Pondasi (25%)</span><span>RELEASED</span></div>
+                      <p className="text-slate-700">Rp 2.500.000.000 dicairkan ke Developer, Kontraktor & Supplier Material.</p>
+                    </div>
+                    <div className="p-3 bg-amber-50 rounded-xl border border-amber-200">
+                      <div className="flex justify-between font-bold text-amber-800 mb-1"><span>Termin 2: Pekerjaan Struktur (35%)</span><span>IN_INSPECTION</span></div>
+                      <p className="text-slate-700">Rp 3.500.000.000 dalam proses verifikasi fisik tim NARA.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TEAL PARTNERSHIP BANNER CARD (DYNAMICALLY MANAGED BY CMS WITH CONTINUOUS SLIDER) */}
+            <div className="rounded-2xl bg-[#1ac1b9] p-5 sm:p-6 shadow-md border border-teal-400 text-white space-y-3 overflow-hidden">
+              <div className="border-b border-teal-300/30 pb-2">
+                <h3 className="text-sm sm:text-base font-black text-white tracking-wide uppercase">
+                  PARTNERSHIP :
+                </h3>
+              </div>
+              
+              {/* Single Row Running Marquee Slider Container */}
+              <div className="relative w-full overflow-hidden py-1">
+                <div className="animate-marquee flex items-center gap-3 sm:gap-4">
+                  {/* Duplicated array for smooth infinite seamless loop */}
+                  {[...partnersList, ...partnersList].map((partner, idx) => (
+                    <div 
+                      key={`${partner.id}-${idx}`}
+                      className="bg-white rounded-xl px-4 py-2.5 flex items-center justify-center gap-2 shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer border border-white/90 shrink-0"
+                    >
+                      {renderPartnerBadge(partner)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+          </main>
+
+          {/* ========================================================================= */}
+          {/* HALAMAN / MODAL CMS CONTROL PANEL & LAYOUT MANAGER (FULLSCREEN DASHBOARD) */}
+          {/* ========================================================================= */}
+          {isCmsModalOpen && (
+            <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4">
+              <div className="bg-white border border-slate-300 rounded-3xl max-w-5xl w-full h-[92vh] flex flex-col justify-between overflow-hidden shadow-2xl text-slate-900">
+                
+                {/* CMS Header Bar */}
+                <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between border-b border-slate-800">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#1ac1b9] text-slate-950 flex items-center justify-center font-black text-xl">
+                      ⚙️
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-black text-white flex items-center gap-2">
+                        <span>CMS Admin Layout & Content Manager</span>
+                        <span className="bg-teal-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full">v2.4 Live Sync</span>
+                      </h2>
+                      <p className="text-xs text-slate-400">Pengaturan Tata Letak, Gambar, Promosi, & Logo Mitra Website</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => {
+                        showToast('💾 Seluruh Pengaturan Layout & Konten Telah Berhasil Diterapkan!');
+                        setIsCmsModalOpen(false);
+                      }}
+                      className="px-4 py-2 bg-[#1ac1b9] hover:bg-[#16a39d] text-slate-950 font-extrabold text-xs rounded-xl shadow-md cursor-pointer transition-all"
+                    >
+                      💾 Simpan & Tampilkan ke Web
+                    </button>
+                    <button 
+                      onClick={() => setIsCmsModalOpen(false)}
+                      className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl cursor-pointer"
+                    >
+                      ✕ Tutup
+                    </button>
+                  </div>
+                </div>
+
+                {/* CMS Toast Alert */}
+                {cmsToast && (
+                  <div className="bg-teal-500 text-slate-950 font-black text-xs px-4 py-2 text-center shadow-inner flex items-center justify-center gap-2">
+                    <span>✨</span>
+                    <span>{cmsToast}</span>
+                  </div>
+                )}
+
+                {/* CMS Navigation Tabs */}
+                <div className="bg-slate-100 border-b border-slate-200 px-6 py-2 flex gap-2 overflow-x-auto text-xs">
+                  <button 
+                    onClick={() => setCmsTab('hero')}
+                    className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer ${cmsTab === 'hero' ? 'bg-white text-teal-800 shadow-sm border border-slate-200' : 'text-slate-600 hover:text-slate-900'}`}
+                  >
+                    🎨 Layout Hero & Tema Warna
+                  </button>
+                  <button 
+                    onClick={() => setCmsTab('deals')}
+                    className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer ${cmsTab === 'deals' ? 'bg-white text-teal-800 shadow-sm border border-slate-200' : 'text-slate-600 hover:text-slate-900'}`}
+                  >
+                    📢 Cards Promo ("Lihat Kebutuhanmu")
+                  </button>
+                  <button 
+                    onClick={() => setCmsTab('actors')}
+                    className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer ${cmsTab === 'actors' ? 'bg-white text-teal-800 shadow-sm border border-slate-200' : 'text-slate-600 hover:text-slate-900'}`}
+                  >
+                    👥 12 Kategori Aktor Ekosistem
+                  </button>
+                  <button 
+                    onClick={() => setCmsTab('partners')}
+                    className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer ${cmsTab === 'partners' ? 'bg-white text-teal-800 shadow-sm border border-slate-200' : 'text-slate-600 hover:text-slate-900'}`}
+                  >
+                    🤝 Logo Mitra Partnership
+                  </button>
+                </div>
+
+                {/* CMS Tab Body Content */}
+                <div className="p-6 overflow-y-auto flex-1 space-y-6 text-xs text-slate-800">
+
+                  {/* CMS TAB 1: HERO & THEME */}
+                  {cmsTab === 'hero' && (
+                    <div className="space-y-6">
+                      <div className="glass-panel p-5 space-y-4">
+                        <h3 className="font-extrabold text-sm text-slate-900 border-b pb-2">✏️ Pengaturan Teks Banner Utama (Hero Section)</h3>
+                        
+                        <div>
+                          <label className="font-bold text-slate-700 block mb-1">Judul Utama (Awal Teks):</label>
+                          <input 
+                            type="text" 
+                            value={heroConfig.headingPre}
+                            onChange={(e) => setHeroConfig({...heroConfig, headingPre: e.target.value})}
+                            className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900 font-bold"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="font-bold text-slate-700 block mb-1">Teks Sorotan Kuning (Highlight Text):</label>
+                          <input 
+                            type="text" 
+                            value={heroConfig.headingHighlight}
+                            onChange={(e) => setHeroConfig({...heroConfig, headingHighlight: e.target.value})}
+                            className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-amber-700 font-bold"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="font-bold text-slate-700 block mb-1">Deskripsi Pembuka Ekosistem:</label>
+                          <textarea 
+                            rows="3"
+                            value={heroConfig.description}
+                            onChange={(e) => setHeroConfig({...heroConfig, description: e.target.value})}
+                            className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900"
+                          ></textarea>
+                        </div>
+                      </div>
+
+                      <div className="glass-panel p-5 space-y-4">
+                        <h3 className="font-extrabold text-sm text-slate-900 border-b pb-2">🎨 Palet Warna Gradasi Banner</h3>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          <button 
+                            type="button"
+                            onClick={() => setHeroConfig({...heroConfig, gradientBg: 'from-[#0f4c4a] via-[#136663] to-[#0d7873]'})}
+                            className={`p-3 rounded-xl border text-left text-white bg-gradient-to-r from-[#0f4c4a] via-[#136663] to-[#0d7873] cursor-pointer ${heroConfig.gradientBg.includes('#0f4c4a') ? 'ring-2 ring-amber-400 border-white' : ''}`}
+                          >
+                            <span className="font-black text-xs block">Teal Beams (#1AC1B9)</span>
+                            <span className="text-[10px] text-teal-100">Default Luxury Theme</span>
+                          </button>
+
+                          <button 
+                            type="button"
+                            onClick={() => setHeroConfig({...heroConfig, gradientBg: 'from-[#1e3a8a] via-[#1d4ed8] to-[#1e40af]'})}
+                            className={`p-3 rounded-xl border text-left text-white bg-gradient-to-r from-[#1e3a8a] via-[#1d4ed8] to-[#1e40af] cursor-pointer ${heroConfig.gradientBg.includes('#1e3a8a') ? 'ring-2 ring-amber-400 border-white' : ''}`}
+                          >
+                            <span className="font-black text-xs block">Royal Navy Blue</span>
+                            <span className="text-[10px] text-blue-100">Corporate & Institutional</span>
+                          </button>
+
+                          <button 
+                            type="button"
+                            onClick={() => setHeroConfig({...heroConfig, gradientBg: 'from-[#064e3b] via-[#047857] to-[#059669]'})}
+                            className={`p-3 rounded-xl border text-left text-white bg-gradient-to-r from-[#064e3b] via-[#047857] to-[#059669] cursor-pointer ${heroConfig.gradientBg.includes('#064e3b') ? 'ring-2 ring-amber-400 border-white' : ''}`}
+                          >
+                            <span className="font-black text-xs block">Emerald Green</span>
+                            <span className="text-[10px] text-emerald-100">Eco-living & Sustainable</span>
+                          </button>
+
+                          <button 
+                            type="button"
+                            onClick={() => setHeroConfig({...heroConfig, gradientBg: 'from-[#78350f] via-[#b45309] to-[#d97706]'})}
+                            className={`p-3 rounded-xl border text-left text-white bg-gradient-to-r from-[#78350f] via-[#b45309] to-[#d97706] cursor-pointer ${heroConfig.gradientBg.includes('#78350f') ? 'ring-2 ring-amber-400 border-white' : ''}`}
+                          >
+                            <span className="font-black text-xs block">Luxury Gold</span>
+                            <span className="text-[10px] text-amber-100">Exclusive Premium Investment</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* CMS TAB 2: DEALS & PROMOS */}
+                  {cmsTab === 'deals' && (
+                    <div className="space-y-6">
+                      
+                      {/* Form Tambah Deal Card Baru */}
+                      <form onSubmit={handleAddDealCard} className="glass-panel p-5 space-y-4 border-2 border-teal-400/40">
+                        <h3 className="font-extrabold text-sm text-slate-900 border-b pb-2 flex items-center gap-2">
+                          <span>➕ Tambah Card Promosi / Proposal Baru</span>
+                        </h3>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="font-bold text-slate-700 block mb-1">Judul Card:</label>
+                            <input 
+                              type="text" 
+                              required
+                              placeholder="Contoh: Proposal Investasi Ruko Hook Profit 30%"
+                              value={newDealCard.title}
+                              onChange={(e) => setNewDealCard({...newDealCard, title: e.target.value})}
+                              className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-900"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="font-bold text-slate-700 block mb-1">Badge Tag (Misal: Mini Investment):</label>
+                            <input 
+                              type="text" 
+                              required
+                              value={newDealCard.badge}
+                              onChange={(e) => setNewDealCard({...newDealCard, badge: e.target.value})}
+                              className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-900"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="font-bold text-slate-700 block mb-1">Tag Profit / Harga (Misal: Profit 25% p.a.):</label>
+                            <input 
+                              type="text" 
+                              required
+                              value={newDealCard.profitTag}
+                              onChange={(e) => setNewDealCard({...newDealCard, profitTag: e.target.value})}
+                              className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-amber-700 font-bold"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="font-bold text-slate-700 block mb-1">Lokasi Proyek / Cakupan:</label>
+                            <input 
+                              type="text" 
+                              required
+                              value={newDealCard.location}
+                              onChange={(e) => setNewDealCard({...newDealCard, location: e.target.value})}
+                              className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-900"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="font-bold text-slate-700 block mb-1">URL Gambar Header Card:</label>
+                          <input 
+                            type="text" 
+                            required
+                            value={newDealCard.image}
+                            onChange={(e) => setNewDealCard({...newDealCard, image: e.target.value})}
+                            className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-900 font-mono text-[11px]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="font-bold text-slate-700 block mb-1">Deskripsi Singkat Penawaran:</label>
+                          <textarea 
+                            rows="2"
+                            required
+                            placeholder="Jelaskan ringkasan skema profit, keunggulan promo, atau lokasi..."
+                            value={newDealCard.description}
+                            onChange={(e) => setNewDealCard({...newDealCard, description: e.target.value})}
+                            className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-900"
+                          ></textarea>
+                        </div>
+
+                        <button 
+                          type="submit"
+                          className="px-5 py-2.5 bg-[#1ac1b9] hover:bg-[#16a39d] text-slate-950 font-extrabold text-xs rounded-xl shadow-md cursor-pointer"
+                        >
+                          ➕ Tambahkan Card Ke Halaman Web
+                        </button>
+                      </form>
+
+                      {/* Daftar Cards yang Aktif */}
+                      <div className="space-y-3">
+                        <h3 className="font-extrabold text-sm text-slate-900">📋 Daftar Cards Promosi Aktif ({needsCardsList.length} Cards):</h3>
+                        <div className="space-y-2">
+                          {needsCardsList.map(c => (
+                            <div key={c.id} className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex justify-between items-center gap-4">
+                              <div className="flex items-center gap-3">
+                                <img src={c.image} className="w-12 h-12 rounded-lg object-cover border border-slate-300" />
+                                <div>
+                                  <h4 className="font-extrabold text-xs text-slate-900">{c.title}</h4>
+                                  <p className="text-[11px] text-amber-700 font-bold">{c.profitTag} • 📍 {c.location}</p>
+                                </div>
+                              </div>
+                              <button 
+                                type="button"
+                                onClick={() => handleDeleteDealCard(c.id)}
+                                className="px-3 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold text-xs rounded-lg border border-rose-300 cursor-pointer shrink-0"
+                              >
+                                🗑️ Hapus Card
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                    </div>
+                  )}
+
+                  {/* CMS TAB 3: 12 ACTORS CATEGORY */}
+                  {cmsTab === 'actors' && (
+                    <div className="space-y-4">
+                      <h3 className="font-extrabold text-sm text-slate-900">👥 Pengaturan Teks 12 Kategori Aktor Ekosistem</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {actorsList.map((actor, idx) => (
+                          <div key={actor.id} className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">{actor.vectorIcon}</span>
+                              <input 
+                                type="text" 
+                                value={actor.shortName}
+                                onChange={(e) => {
+                                  const updated = [...actorsList];
+                                  updated[idx].shortName = e.target.value;
+                                  setActorsList(updated);
+                                }}
+                                className="bg-white border border-slate-300 font-extrabold text-xs rounded px-2 py-1 flex-1 text-slate-900"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] text-slate-500 font-bold block">Teks Kebutuhan Aktor:</label>
+                              <input 
+                                type="text" 
+                                value={actor.kebutuhan}
+                                onChange={(e) => {
+                                  const updated = [...actorsList];
+                                  updated[idx].kebutuhan = e.target.value;
+                                  setActorsList(updated);
+                                }}
+                                className="w-full bg-white border border-slate-300 text-[11px] rounded px-2 py-1 text-slate-800"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* CMS TAB 4: PARTNERSHIP LOGOS */}
+                  {cmsTab === 'partners' && (
+                    <div className="space-y-6">
+                      
+                      {/* Form Tambah Partner Baru */}
+                      <form onSubmit={handleAddPartner} className="glass-panel p-5 space-y-4 border-2 border-teal-400/40">
+                        <h3 className="font-extrabold text-sm text-slate-900 border-b pb-2 flex items-center gap-2">
+                          <span>🤝 Tambah Logo / Nama Mitra Strategis Baru</span>
+                        </h3>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="font-bold text-slate-700 block mb-1">Nama Perusahaan / Institusi:</label>
+                            <input 
+                              type="text" 
+                              required
+                              placeholder="Contoh: Bank Danamon / WIKA Gedung"
+                              value={newPartner.name}
+                              onChange={(e) => setNewPartner({...newPartner, name: e.target.value})}
+                              className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-900"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="font-bold text-slate-700 block mb-1">Icon Emoji Kategori (Misal: 🏦, 🏢, 🏗️):</label>
+                            <input 
+                              type="text" 
+                              value={newPartner.icon}
+                              onChange={(e) => setNewPartner({...newPartner, icon: e.target.value})}
+                              className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-900"
+                            />
+                          </div>
+                        </div>
+
+                        <button 
+                          type="submit"
+                          className="px-5 py-2.5 bg-[#1ac1b9] hover:bg-[#16a39d] text-slate-950 font-extrabold text-xs rounded-xl shadow-md cursor-pointer"
+                        >
+                          ➕ Tambahkan Ke Running Slider
+                        </button>
+                      </form>
+
+                      {/* Daftar Partners yang Tampil */}
+                      <div className="space-y-3">
+                        <h3 className="font-extrabold text-sm text-slate-900">📋 Daftar Mitra di Marquee Slider ({partnersList.length} Partners):</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {partnersList.map(p => (
+                            <div key={p.id} className="bg-slate-50 p-3 rounded-xl border border-slate-200 flex justify-between items-center gap-3">
+                              <div className="flex items-center gap-2">
+                                <span className="text-base">{p.icon || '🤝'}</span>
+                                <span className="font-extrabold text-xs text-slate-900">{p.name}</span>
+                              </div>
+                              <button 
+                                type="button"
+                                onClick={() => handleDeletePartner(p.id)}
+                                className="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold text-xs rounded-lg border border-rose-300 cursor-pointer"
+                              >
+                                🗑️ Hapus
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                    </div>
+                  )}
+
+                </div>
+
+                {/* CMS Modal Footer */}
+                <div className="bg-slate-100 border-t border-slate-200 px-6 py-3.5 flex justify-between items-center text-xs">
+                  <span className="text-slate-500 font-bold">💡 Tip: Perubahan di CMS ini langsung disinkronkan ke tampilan website.</span>
+                  <button 
+                    onClick={() => {
+                      showToast('💾 Perubahan Layout & Konten Telah Diterapkan!');
+                      setIsCmsModalOpen(false);
+                    }}
+                    className="px-5 py-2 bg-[#1ac1b9] hover:bg-[#16a39d] text-slate-950 font-black text-xs rounded-xl shadow-md cursor-pointer"
+                  >
+                    Simpan & Tutup CMS
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {/* MODAL MASUK (LOGIN) */}
+          {isLoginModalOpen && (
+            <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white border border-slate-300 rounded-3xl max-w-md w-full p-6 space-y-5 shadow-2xl text-slate-900">
+                <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+                  <div>
+                    <h2 className="text-lg font-black text-slate-900">🔑 Masuk ke NARA Ecosystem</h2>
+                    <p className="text-xs text-slate-500">Silakan pilih peran aktor dan masukkan kredensial Anda</p>
+                  </div>
+                  <button onClick={() => setIsLoginModalOpen(false)} className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-xs text-slate-700 rounded-lg">✕</button>
+                </div>
+
+                <div className="space-y-4 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Peran Aktor Anda:</label>
+                    <select 
+                      value={loginRole}
+                      onChange={(e) => setLoginRole(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900 font-bold"
+                    >
+                      {actorsList.map(a => (
+                        <option key={a.id} value={a.id}>{a.vectorIcon} {a.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* TOMBOL GOOGLE SINGLE SIGN-ON (SSO) */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsLoginModalOpen(false);
+                      alert('🎉 Berhasil Masuk Instan via Google SSO (Akun: nugrawatimaya@gmail.com) sebagai ' + actorsList.find(a => a.id === loginRole)?.name + '!');
+                    }}
+                    className="w-full py-2.5 bg-white hover:bg-slate-50 text-slate-800 font-extrabold text-xs rounded-xl border border-slate-300 shadow-xs flex items-center justify-center gap-2.5 transition-all cursor-pointer"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                      <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.15C3.26 21.3 7.31 24 12 24z"/>
+                      <path fill="#FBBC05" d="M5.28 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.39l3.99-3.15z"/>
+                      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.61l3.99 3.15c.95-2.85 3.6-4.96 6.72-4.96z"/>
+                    </svg>
+                    <span>Masuk dengan Akun Google Terdaftar</span>
+                  </button>
+
+                  {/* DIVIDER */}
+                  <div className="relative flex py-1 items-center">
+                    <div className="flex-grow border-t border-slate-200"></div>
+                    <span className="flex-shrink mx-3 text-[10px] text-slate-400 font-bold uppercase">atau gunakan email / WhatsApp</span>
+                    <div className="flex-grow border-t border-slate-200"></div>
+                  </div>
+
+                  <form onSubmit={handleLoginSubmit} className="space-y-3 text-xs">
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">Email / No. WhatsApp:</label>
+                      <input 
+                        type="text"
+                        required
+                        placeholder="email@perusahaan.com / 0812xxxx"
+                        defaultValue="mitra@nara.id"
+                        className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">Kata Sandi / PIN:</label>
+                      <input 
+                        type="password"
+                        required
+                        defaultValue="123456"
+                        className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900"
+                      />
+                    </div>
+
+                    <button 
+                      type="submit"
+                      className="w-full py-3 bg-[#1ac1b9] hover:bg-[#16a39d] text-slate-950 font-extrabold text-xs rounded-xl shadow-md"
+                    >
+                      Masuk ke Dashboard NARA
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL DAFTAR (REGISTER) */}
+          {isRegisterModalOpen && (
+            <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white border border-slate-300 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl text-slate-900">
+                <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+                  <div>
+                    <h2 className="text-lg font-black text-slate-900">📝 Registrasi Tenant Aktor NARA</h2>
+                    <p className="text-xs text-slate-500">Bergabung dengan ekosistem penjaminan properti & konstruksi</p>
+                  </div>
+                  <button onClick={() => setIsRegisterModalOpen(false)} className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-xs text-slate-700 rounded-lg">✕</button>
+                </div>
+
+                <form onSubmit={handleRegisterSubmit} className="space-y-4 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Daftar Sebagai Aktor:</label>
+                    <select 
+                      value={regRole}
+                      onChange={(e) => setRegRole(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900 font-bold"
+                    >
+                      {actorsList.map(a => (
+                        <option key={a.id} value={a.id}>{a.vectorIcon} {a.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">Nama Lengkap / Perusahaan:</label>
+                      <input 
+                        type="text"
+                        required
+                        placeholder="PT Karya Nusantara / Ahmad"
+                        className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">No. WhatsApp Resmi:</label>
+                      <input 
+                        type="text"
+                        required
+                        placeholder="08123456xxxx"
+                        className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Alamat Email:</label>
+                    <input 
+                      type="email"
+                      required
+                      placeholder="info@mitraperusahaan.com"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Dokumen Verifikasi (SHM / SBU / NIB / KTP):</label>
+                    <input 
+                      type="file"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-700"
+                    />
+                  </div>
+
+                  <button 
+                    type="submit"
+                    className="w-full py-3 bg-[#1ac1b9] hover:bg-[#16a39d] text-slate-950 font-extrabold text-xs rounded-xl shadow-md"
+                  >
+                    Daftar Akun & Ajukan Verifikasi Legal NARA
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL 1: TENTANG NARA ECOSYSTEM */}
+          {isAboutModalOpen && (
+            <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white border border-slate-300 rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden text-slate-900">
+                <div className="flex justify-between items-center border-b border-slate-200 pb-4">
+                  <div className="flex items-center gap-3">
+                    <img src="./nara-logo.png" alt="NaraEcosystem Logo" className="h-8 w-auto object-contain" />
+                    <div>
+                      <h2 className="text-xl font-black text-slate-900">Tentang NARA Ecosystem</h2>
+                      <p className="text-xs text-slate-500">Platform Penjamin & Manajemen Risiko Properti & Konstruksi</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setIsAboutModalOpen(false)} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-xs text-slate-700 rounded-lg">✕</button>
+                </div>
+
+                <div className="space-y-4 text-xs text-slate-700 leading-relaxed">
+                  <p>
+                    <strong>NARA (NLD Hub Ecosystem)</strong> adalah marketplace ekosistem properti dan konstruksi yang mempertemukan <strong>12 jenis aktor</strong> dalam 1 alur transaksi terpadu. Platform berperan sebagai <strong>Penjamin (Escrow)</strong> dan <strong>Manajer Risiko Legal & Fisik</strong> dari nilai deal yang berhasil difasilitasi.
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                      <span className="font-bold text-amber-700 block mb-1">🏢 1. Marketplace B2B/B2C</span>
+                      <p className="text-[11px] text-slate-600">Mempertemukan pemilik lahan, investor, kontraktor, supplier material & pembeli.</p>
+                    </div>
+                    <div className="bg-teal-50 p-3 rounded-xl border border-teal-200">
+                      <span className="font-bold text-teal-800 block mb-1">🔒 2. Rekening Bersama Escrow</span>
+                      <p className="text-[11px] text-slate-600">Dana ditahan aman di pihak ketiga hingga syarat milestone konstruksi tercapai.</p>
+                    </div>
+                    <div className="bg-blue-50 p-3 rounded-xl border border-blue-200">
+                      <span className="font-bold text-blue-800 block mb-1">⚖️ 3. Risk Management & Notaris</span>
+                      <p className="text-[11px] text-slate-600">Due diligence dokumen (SHM, PBG/IMB, AMDAL) didampingi notaris mitra.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => setIsAboutModalOpen(false)}
+                  className="w-full py-2.5 bg-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow-sm"
+                >
+                  Tutup Informasi
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL 2: MULAI PASANG LISTING */}
+          {isListingModalOpen && (
+            <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white border border-slate-300 rounded-3xl max-w-xl w-full p-6 space-y-5 shadow-2xl text-slate-900">
+                <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+                  <div>
+                    <h2 className="text-lg font-black text-slate-900">➕ Pasang Listing Baru di NARA</h2>
+                    <p className="text-xs text-slate-500">Daftarkan Properti, Jasa Pemborongan, PO Material, atau Notaris</p>
+                  </div>
+                  <button onClick={() => setIsListingModalOpen(false)} className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-xs text-slate-700 rounded-lg">✕</button>
+                </div>
+
+                <form onSubmit={handleSubmitListing} className="space-y-4 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Kategori Listing:</label>
+                    <select 
+                      value={newListing.category}
+                      onChange={(e) => setNewListing({...newListing, category: e.target.value})}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900 font-semibold"
+                    >
+                      <option value="Pengembangan Properti (Joint Venture)">🏢 Pengembangan Properti / Lahan (Joint Venture)</option>
+                      <option value="Jasa Kontraktor & Pemborong">👷 Jasa Kontraktor & Sub-Kontraktor</option>
+                      <option value="Katalog Material Toko Bangunan">🏪 Katalog Material Toko Bangunan (PO Escrow)</option>
+                      <option value="Jasa Legalitas & Notaris">📜 Jasa Legalitas & Notaris</option>
+                      <option value="Agen Marketing Properti">📢 Agen Marketing & Broker Properti</option>
+                      <option value="Jasa Kelistrikan & MEP">⚡ Jasa Kelistrikan & Teknik MEP</option>
+                      <option value="KPR & Pembiayaan Bank">🏦 KPR & Pembiayaan Perbankan</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Judul Listing / Nama Proyek / Toko:</label>
+                    <input 
+                      type="text"
+                      required
+                      placeholder="Contoh: Lahan Cluster BSD 1.500m² / PT Karya Struktur"
+                      value={newListing.title}
+                      onChange={(e) => setNewListing({...newListing, title: e.target.value})}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">Lokasi (Kota / Wilayah):</label>
+                      <input 
+                        type="text"
+                        required
+                        placeholder="Contoh: Tangerang Selatan"
+                        value={newListing.location}
+                        onChange={(e) => setNewListing({...newListing, location: e.target.value})}
+                        className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">Target Nilai Deal / Investasi (Rp):</label>
+                      <input 
+                        type="number"
+                        required
+                        step="500000000"
+                        value={newListing.targetInvestment}
+                        onChange={(e) => setNewListing({...newListing, targetInvestment: e.target.value})}
+                        className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-amber-700 font-bold"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Deskripsi Singkat & Legalitas Dokumen:</label>
+                    <textarea 
+                      rows="3"
+                      placeholder="Jelaskan detail proyek, kelengkapan sertifikat SHM, PBG/IMB, atau kebutuhan material..."
+                      value={newListing.description}
+                      onChange={(e) => setNewListing({...newListing, description: e.target.value})}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900"
+                    ></textarea>
+                  </div>
+
+                  <button 
+                    type="submit"
+                    className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-md"
+                  >
+                    🚀 Tayangkan Listing Sekarang
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL 3: NARA CARE */}
+          {isCareModalOpen && (
+            <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white border border-teal-300 rounded-3xl max-w-md w-full p-6 space-y-5 shadow-2xl text-slate-900">
+                <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+                  <div className="flex items-center gap-2 text-teal-700">
+                    <span className="text-xl">🎧</span>
+                    <div>
+                      <h2 className="text-lg font-black text-slate-900">Nara Care & Support 24/7</h2>
+                      <p className="text-xs text-slate-500">Pusat Bantuan & Mediasi Risiko</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setIsCareModalOpen(false)} className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-xs text-slate-700 rounded-lg">✕</button>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
+                    <span className="font-bold text-amber-700 block">📞 Layanan Mediasi Deal Room Offline</span>
+                    <p className="text-slate-600">Tim NARA siap memfasilitasi ruang rapat fisik & koordinasi pendampingan Notaris mitra.</p>
+                  </div>
+
+                  <div className="bg-teal-50 p-3.5 rounded-xl border border-teal-200 space-y-1">
+                    <span className="font-bold text-teal-800 block">🛡️ Permohonan Risk Audit Lahan & PBG</span>
+                    <p className="text-slate-600">Dapatkan bantuan tim legal NARA untuk pengecekan sertifikat BPN & izin bangunan.</p>
+                  </div>
+
+                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
+                    <span className="font-bold text-blue-800 block">💬 Live Support Hotline</span>
+                    <p className="text-slate-600">WhatsApp Support: <strong>+62 812-9000-NARA</strong> | Email: <strong>care@nara.id</strong></p>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => setIsCareModalOpen(false)}
+                  className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl"
+                >
+                  Tutup Nara Care
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* CALCULATOR MODAL */}
+          {isCalculatorOpen && (
+            <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white border border-slate-300 rounded-3xl max-w-xl w-full p-6 space-y-5 shadow-2xl text-slate-900">
+                <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+                  <div>
+                    <h2 className="text-lg font-black text-slate-900">Kalkulator Fee Platform NARA</h2>
+                    <p className="text-xs text-slate-500">Kalkulasi Komisi & Payout Distribusi</p>
+                  </div>
+                  <button onClick={() => setIsCalculatorOpen(false)} className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-xs text-slate-700 rounded-lg">✕</button>
+                </div>
+
+                <div className="space-y-4 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Total Nilai Deal Proyek (Rp):</label>
+                    <input 
+                      type="number"
+                      value={calcValue}
+                      onChange={(e) => setCalcValue(Number(e.target.value))}
+                      step="1000000000"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-amber-700 font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between font-bold text-slate-700 mb-1">
+                      <span>Persentase Komisi NARA:</span>
+                      <span className="text-amber-700">{calcRate}%</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="5.0" 
+                      max="10.0" 
+                      step="0.5" 
+                      value={calcRate} 
+                      onChange={(e) => setCalcRate(Number(e.target.value))}
+                      className="w-full accent-amber-500 cursor-pointer"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 pt-2">
+                    <div className="glass-panel-gold p-4">
+                      <span className="text-[10px] text-amber-800 font-bold block uppercase">Komisi NARA ({calcRate}%)</span>
+                      <span className="text-lg font-black text-amber-700">Rp {naraFee.toLocaleString('id-ID')}</span>
+                    </div>
+                    <div className="glass-panel-emerald p-4">
+                      <span className="text-[10px] text-teal-800 font-bold block uppercase">Net Ke Aktor</span>
+                      <span className="text-lg font-black text-teal-700">Rp {netDisbursed.toLocaleString('id-ID')}</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1.5 text-[11px]">
+                    <div className="flex justify-between text-slate-700"><span>👷 Kontraktor Utama (55% Share):</span><strong className="text-slate-900">Rp {contractorShare.toLocaleString('id-ID')}</strong></div>
+                    <div className="flex justify-between text-slate-700"><span>🏪 Toko Bangunan (35% Share):</span><strong className="text-slate-900">Rp {materialShare.toLocaleString('id-ID')}</strong></div>
+                    <div className="flex justify-between text-slate-700"><span>⚖️ Notaris & Legal (10% Share):</span><strong className="text-slate-900">Rp {legalNotaryShare.toLocaleString('id-ID')}</strong></div>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => setIsCalculatorOpen(false)}
+                  className="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-sm"
+                >
+                  Tutup Simulator
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* FOOTER */}
+          <footer className="border-t border-slate-200 bg-slate-50 py-4 text-center text-slate-500 text-xs">
+            © 2026 NARA Ecosystem Marketplace (Escrow & Risk Management).
+          </footer>
+
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
