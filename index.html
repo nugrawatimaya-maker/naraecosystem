@@ -707,46 +707,6 @@
               </div>
             </div>
 
-            {/* QUICK NAVIGATION TABS */}
-            <div className="bg-slate-50/90 border-t border-slate-200/80 px-4 py-2">
-              <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto text-xs font-bold">
-                <button 
-                  onClick={() => setActiveTab('flow')}
-                  className={`px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'flow' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-950 hover:bg-slate-200/70'}`}
-                >
-                  <span>🏛️ Beranda Ekosistem</span>
-                </button>
-
-                <button 
-                  onClick={() => setActiveTab('marketplace')}
-                  className={`px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'marketplace' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-950 hover:bg-slate-200/70'}`}
-                >
-                  <span>🏢 Marketplace Listing</span>
-                  <span className="bg-amber-400 text-slate-950 text-[10px] px-1.5 py-0.2 rounded-full font-black">A1 Deals</span>
-                </button>
-
-                <button 
-                  onClick={() => setActiveTab('verification')}
-                  className={`px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'verification' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-950 hover:bg-slate-200/70'}`}
-                >
-                  <span>🛡️ Hub Verifikasi 3-Lapis</span>
-                </button>
-
-                <button 
-                  onClick={() => setActiveTab('escrow')}
-                  className={`px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'escrow' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-950 hover:bg-slate-200/70'}`}
-                >
-                  <span>🔒 Escrow Deal Room</span>
-                </button>
-
-                <button 
-                  onClick={() => setIsCalculatorOpen(true)}
-                  className="ml-auto px-3.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 font-extrabold"
-                >
-                  <span>🧮 Simulator Fee NARA</span>
-                </button>
-              </div>
-            </div>
 
           </header>
 
