@@ -879,25 +879,6 @@
                   </div>
                 </div>
 
-                {/* FLOATING LIVE STATS BAR (High Authority & Trust Signals) */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {[
-                    { number: 'Rp 48,5 M+', label: 'Total Transaksi Terfasilitasi', icon: '💼', color: 'text-teal-700' },
-                    { number: '100% Aman', label: 'Rekening Bersama Escrow', icon: '🛡️', color: 'text-emerald-700' },
-                    { number: '3-Lapis', label: 'Audit Legalitas & SHM BPN', icon: '📑', color: 'text-blue-700' },
-                    { number: '1.250+', label: 'Mitra & Investor Terverifikasi', icon: '👥', color: 'text-amber-700' },
-                  ].map((stat, idx) => (
-                    <div key={idx} className="glass-luxury p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3.5 group hover:border-teal-400 transition-all">
-                      <div className="w-12 h-12 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-2xl shrink-0 group-hover:scale-110 transition-transform shadow-xs">
-                        {stat.icon}
-                      </div>
-                      <div>
-                        <span className={`text-lg sm:text-xl font-black ${stat.color} block tracking-tight`}>{stat.number}</span>
-                        <span className="text-xs text-slate-500 font-semibold leading-tight">{stat.label}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
 
                 {/* 12 KATEGORI AKTOR EKOSISTEM */}
                 <div className="space-y-4">
