@@ -378,6 +378,7 @@
 
       // Login / Register Form state
       const [authRole, setAuthRole] = useState('investor');
+      const [authPhoneMode, setAuthPhoneMode] = useState(false);
       const [authName, setAuthName] = useState('');
       const [authEmail, setAuthEmail] = useState('');
       const [authPhone, setAuthPhone] = useState('');
@@ -451,10 +452,29 @@
           setCurrentActivityIndex(prev => (prev + 1) % LIVE_ACTIVITIES.length);
         }, 6000);
 
-        // Check local storage session
-        const savedUser = localStorage.getItem('nara_current_user');
-        if (savedUser) {
-          try { setCurrentUser(JSON.parse(savedUser)); } catch(e){}
+        // Check URL parameters for Laravel Socialite Google OAuth callback
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('auth') === 'success') {
+          const googleUser = {
+            name: decodeURIComponent(urlParams.get('name') || 'Investor NARA'),
+            email: decodeURIComponent(urlParams.get('email') || 'user@gmail.com'),
+            role: decodeURIComponent(urlParams.get('role') || 'investor'),
+            roleName: 'Investor Proyek',
+            roleIcon: '📈',
+            avatar: decodeURIComponent(urlParams.get('avatar') || ''),
+            verified: true,
+            method: 'google'
+          };
+          setCurrentUser(googleUser);
+          localStorage.setItem('nara_current_user', JSON.stringify(googleUser));
+          // Clean URL parameter
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } else {
+          // Check local storage session
+          const savedUser = localStorage.getItem('nara_current_user');
+          if (savedUser) {
+            try { setCurrentUser(JSON.parse(savedUser)); } catch(e){}
+          }
         }
 
         // Load saved CMS Hero config from Database API & localStorage
@@ -482,8 +502,14 @@
          p.location.toLowerCase().includes(globalSearchQuery.toLowerCase()))
       );
 
-      // Handle Quick Auth (Frictionless)
+      // Handle Quick Auth (Frictionless / Laravel Socialite)
       const handleQuickAuth = (method, role = authRole) => {
+        if (method === 'google' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+          // Redirect langsung ke backend Laravel Socialite di VPS/Production
+          window.location.href = '/auth/google';
+          return;
+        }
+
         const roleData = actorsList.find(a => a.id === role) || actorsList[0];
         const userObj = {
           name: authName || (method === 'google' ? 'Maya Nugrawati' : 'Pengguna Terverifikasi'),
@@ -607,13 +633,6 @@
                     <span>Nara Care 24/7</span>
                   </button>
 
-                  <a 
-                    href="./admin.html"
-                    className="text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1 font-bold"
-                  >
-                    <span>⚙️</span>
-                    <span>Admin CMS</span>
-                  </a>
                 </div>
               </div>
 
@@ -704,46 +723,6 @@
               </div>
             </div>
 
-            {/* QUICK NAVIGATION TABS */}
-            <div className="bg-slate-50/90 border-t border-slate-200/80 px-4 py-2">
-              <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto text-xs font-bold">
-                <button 
-                  onClick={() => setActiveTab('flow')}
-                  className={`px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'flow' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-950 hover:bg-slate-200/70'}`}
-                >
-                  <span>🏛️ Beranda Ekosistem</span>
-                </button>
-
-                <button 
-                  onClick={() => setActiveTab('marketplace')}
-                  className={`px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'marketplace' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-950 hover:bg-slate-200/70'}`}
-                >
-                  <span>🏢 Marketplace Listing</span>
-                  <span className="bg-amber-400 text-slate-950 text-[10px] px-1.5 py-0.2 rounded-full font-black">A1 Deals</span>
-                </button>
-
-                <button 
-                  onClick={() => setActiveTab('verification')}
-                  className={`px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'verification' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-950 hover:bg-slate-200/70'}`}
-                >
-                  <span>🛡️ Hub Verifikasi 3-Lapis</span>
-                </button>
-
-                <button 
-                  onClick={() => setActiveTab('escrow')}
-                  className={`px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'escrow' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-950 hover:bg-slate-200/70'}`}
-                >
-                  <span>🔒 Escrow Deal Room</span>
-                </button>
-
-                <button 
-                  onClick={() => setIsCalculatorOpen(true)}
-                  className="ml-auto px-3.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 font-extrabold"
-                >
-                  <span>🧮 Simulator Fee NARA</span>
-                </button>
-              </div>
-            </div>
 
           </header>
 
@@ -1251,121 +1230,100 @@
           </main>
 
           {/* ========================================================================= */}
-          {/* MODAL AUTH FRICTIONLESS (ONE-CLICK LOGIN & INSTANT ONBOARDING) */}
+          {/* MODAL BERGABUNG DENGAN NARA (GOOGLE SSO & DAFTAR NOMOR HP) */}
           {/* ========================================================================= */}
           {isAuthModalOpen && (
-            <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
-              <div className="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-6 sm:p-7 space-y-5 shadow-2xl text-slate-900 relative overflow-hidden animate-slide-up">
+            <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+              <div className="bg-white border border-slate-200 rounded-3xl max-w-sm w-full p-6 sm:p-7 space-y-6 shadow-2xl text-slate-900 relative animate-slide-up my-auto">
                 
                 {/* Modal Header */}
-                <div className="flex justify-between items-center border-b border-slate-200 pb-3.5">
-                  <div className="flex items-center gap-2.5">
-                    <img src="./nara-logo.png" alt="NARA Logo" className="h-7 w-auto object-contain" />
-                    <div>
-                      <h2 className="text-base sm:text-lg font-black text-slate-900">
-                        {authModalTab === 'register' ? '✨ Daftar Cepat NARA (30 Detik)' : '🔑 Masuk ke Akun NARA'}
-                      </h2>
-                    </div>
+                <div className="flex justify-between items-start">
+                  <div className="w-full text-center pr-2">
+                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                      Bergabung Dengan Nara
+                    </h2>
+                    <p className="text-xs text-slate-500 font-medium mt-1">
+                      Akses ekosistem investasi & properti terverifikasi
+                    </p>
                   </div>
-                  <button onClick={() => setIsAuthModalOpen(false)} className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-xs text-slate-700 rounded-xl font-bold">✕</button>
-                </div>
-
-                {/* Tab Switcher */}
-                <div className="flex bg-slate-100 p-1 rounded-2xl text-xs font-black">
                   <button 
-                    onClick={() => setAuthModalTab('register')}
-                    className={`flex-1 py-2 rounded-xl transition-all ${authModalTab === 'register' ? 'bg-white text-slate-950 shadow-xs' : 'text-slate-500'}`}
+                    onClick={() => {
+                      setIsAuthModalOpen(false);
+                      setAuthPhoneMode(false);
+                    }} 
+                    className="absolute top-4 right-4 p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-900 rounded-full font-bold text-xs transition-colors"
                   >
-                    Daftar Baru
-                  </button>
-                  <button 
-                    onClick={() => setAuthModalTab('login')}
-                    className={`flex-1 py-2 rounded-xl transition-all ${authModalTab === 'login' ? 'bg-white text-slate-950 shadow-xs' : 'text-slate-500'}`}
-                  >
-                    Masuk
+                    ✕
                   </button>
                 </div>
 
-                {/* Role Pill Selector */}
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-extrabold text-slate-700 block">Pilih Peran Anda:</label>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    {[
-                      { id: 'investor', label: '📈 Investor Proyek' },
-                      { id: 'developer', label: '🏢 Pemilik Lahan' },
-                      { id: 'kontraktor', label: '🔨 Kontraktor' },
-                      { id: 'notaris', label: '📜 Notaris / PPAT' }
-                    ].map(r => (
-                      <button
-                        key={r.id}
-                        type="button"
-                        onClick={() => setAuthRole(r.id)}
-                        className={`p-2.5 rounded-xl font-extrabold text-left border transition-all cursor-pointer ${authRole === r.id ? 'bg-teal-50 border-teal-500 text-teal-900 shadow-xs' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}`}
-                      >
-                        {r.label}
-                      </button>
-                    ))}
+                {!authPhoneMode ? (
+                  <div className="space-y-3.5 pt-2">
+                    {/* BUTTON 1: DAFTAR DENGAN GOOGLE */}
+                    <button
+                      type="button"
+                      onClick={() => handleQuickAuth('google')}
+                      className="w-full py-3.5 px-4 bg-white hover:bg-slate-50 text-slate-800 font-extrabold text-sm rounded-2xl border-2 border-slate-300 hover:border-slate-400 shadow-sm flex items-center justify-center gap-3 transition-all cursor-pointer group"
+                    >
+                      <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.15C3.26 21.3 7.31 24 12 24z"/>
+                        <path fill="#FBBC05" d="M5.28 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.39l3.99-3.15z"/>
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.61l3.99 3.15c.95-2.85 3.6-4.96 6.72-4.96z"/>
+                      </svg>
+                      <span>Daftar Dengan Google</span>
+                    </button>
+
+                    {/* BUTTON 2: DAFTAR DENGAN NOMOR HP */}
+                    <button
+                      type="button"
+                      onClick={() => setAuthPhoneMode(true)}
+                      className="w-full py-3.5 px-4 bg-white hover:bg-teal-50/60 text-slate-800 hover:text-teal-900 font-extrabold text-sm rounded-2xl border-2 border-slate-300 hover:border-teal-500 shadow-sm flex items-center justify-center gap-3 transition-all cursor-pointer group"
+                    >
+                      <span className="text-base group-hover:scale-110 transition-transform">📱</span>
+                      <span>Daftar dengan Nomor HP</span>
+                    </button>
                   </div>
-                </div>
-
-                {/* ONE-CLICK GOOGLE SSO BUTTON */}
-                <button
-                  type="button"
-                  onClick={() => handleQuickAuth('google')}
-                  className="w-full py-3 bg-white hover:bg-slate-50 text-slate-800 font-black text-xs rounded-2xl border border-slate-300 shadow-sm flex items-center justify-center gap-3 transition-all cursor-pointer group"
-                >
-                  <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
-                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.15C3.26 21.3 7.31 24 12 24z"/>
-                    <path fill="#FBBC05" d="M5.28 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.39l3.99-3.15z"/>
-                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.61l3.99 3.15c.95-2.85 3.6-4.96 6.72-4.96z"/>
-                  </svg>
-                  <span>1-Klik dengan Google SSO</span>
-                </button>
-
-                {/* DIVIDER */}
-                <div className="relative flex py-1 items-center">
-                  <div className="flex-grow border-t border-slate-200"></div>
-                  <span className="flex-shrink mx-3 text-[10px] text-slate-400 font-extrabold uppercase">atau via WhatsApp / Email</span>
-                  <div className="flex-grow border-t border-slate-200"></div>
-                </div>
-
-                {/* Quick Input Form */}
-                <form onSubmit={(e) => { e.preventDefault(); handleQuickAuth('form'); }} className="space-y-3 text-xs">
-                  {authModalTab === 'register' && (
+                ) : (
+                  <form onSubmit={(e) => { e.preventDefault(); handleQuickAuth('form'); }} className="space-y-4 pt-1 animate-fade-in">
                     <div>
+                      <label className="text-xs font-black text-slate-700 block mb-1.5">
+                        Nomor WhatsApp / HP Aktif:
+                      </label>
                       <input 
-                        type="text"
-                        placeholder="Nama Lengkap / Nama PT"
-                        value={authName}
-                        onChange={(e) => setAuthName(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 font-medium"
+                        type="tel"
+                        required
+                        autoFocus
+                        placeholder="Contoh: 081234567890"
+                        value={authPhone}
+                        onChange={(e) => setAuthPhone(e.target.value)}
+                        className="w-full bg-slate-50 border-2 border-slate-300 focus:border-teal-600 focus:bg-white rounded-2xl p-3 text-sm font-bold text-slate-900 placeholder-slate-400 outline-none transition-all shadow-inner"
                       />
                     </div>
-                  )}
 
-                  <div>
-                    <input 
-                      type="text"
-                      required
-                      placeholder="Nomor WhatsApp (0812xxxx) atau Email"
-                      value={authPhone}
-                      onChange={(e) => setAuthPhone(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 font-medium"
-                    />
-                  </div>
+                    <button 
+                      type="submit"
+                      className="w-full py-3.5 bg-gradient-to-r from-[#1ac1b9] to-[#0d9488] hover:from-[#16a39d] hover:to-[#0f766e] text-slate-950 font-black text-sm rounded-2xl shadow-md cursor-pointer transition-all flex items-center justify-center gap-2"
+                    >
+                      <span>Lanjutkan</span>
+                      <span>➔</span>
+                    </button>
 
-                  <button 
-                    type="submit"
-                    className="w-full py-3 bg-gradient-to-r from-[#1ac1b9] to-[#0d9488] hover:from-[#16a39d] hover:to-[#0f766e] text-slate-950 font-black text-xs rounded-2xl shadow-md transition-all cursor-pointer"
-                  >
-                    {authModalTab === 'register' ? 'Daftar & Akses Deal Sekarang' : 'Masuk ke Dashboard'}
-                  </button>
-                </form>
+                    <button 
+                      type="button"
+                      onClick={() => setAuthPhoneMode(false)}
+                      className="w-full text-center text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors"
+                    >
+                      ← Kembali ke pilihan lain
+                    </button>
+                  </form>
+                )}
 
-                <p className="text-[10px] text-slate-400 text-center leading-tight">
-                  Dengan mendaftar, Anda menyetujui Ketentuan Layanan Escrow & Kebijakan Privasi NARA.
-                </p>
+                <div className="pt-2 border-t border-slate-100 text-center">
+                  <p className="text-[10px] text-slate-400 leading-relaxed">
+                    Dengan melanjutkan, Anda menyetujui Ketentuan Layanan Escrow & Kebijakan Privasi NARA.
+                  </p>
+                </div>
 
               </div>
             </div>
