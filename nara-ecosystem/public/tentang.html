@@ -403,28 +403,6 @@ footer{
 </head>
 <body>
 
-<!-- NAV -->
-<nav class="nav">
-  <div class="wrap">
-    <a href="./index.html" class="brand">
-      <span class="mark">NE</span> NARA Ecosystem
-    </a>
-    <div class="nav-links">
-      <a href="#awal">Awal Mula</a>
-      <a href="#galeri">Galeri Rekam Jejak</a>
-      <a href="#perjalanan">Perjalanan 10 Tahun</a>
-      <a href="#sistem">Sistem Amanah</a>
-    </div>
-    <div class="nav-actions">
-      <button id="openCmsBtn" class="btn-cms-toggle" title="Edit Teks & Galeri Foto">
-        <span>✏️</span> Edit Konten
-      </button>
-      <a href="./index.html" class="nav-cta">
-        <span>🏛️</span> Ke Marketplace
-      </a>
-    </div>
-  </div>
-</nav>
 
 <!-- HERO -->
 <header class="hero">
