@@ -398,33 +398,15 @@
       const [calcRate, setCalcRate] = useState(7.5);
 
       useEffect(() => {
-        // Load LocalStorage CMS fallback first
-        const localCms = localStorage.getItem('nara_cms_config');
-        if (localCms) {
-          try {
-            const parsed = JSON.parse(localCms);
-            if (parsed.heroConfig) setHeroConfig(parsed.heroConfig);
-            if (parsed.needsCardsList) setNeedsCardsList(parsed.needsCardsList);
-            if (parsed.partnersList) setPartnersList(parsed.partnersList);
-          } catch(e) {}
-        }
-
         // Fetch live data directly from Laravel REST API Backend
         const fetchLaravelApiData = async () => {
           try {
-            const [resActors, resDeals, resPartners, resProjects, resCms] = await Promise.all([
+            const [resActors, resDeals, resPartners, resProjects] = await Promise.all([
               fetch('/api/v1/actors').then(r => r.json()).catch(() => null),
               fetch('/api/v1/deals-promos').then(r => r.json()).catch(() => null),
               fetch('/api/v1/partners').then(r => r.json()).catch(() => null),
               fetch('/api/v1/projects').then(r => r.json()).catch(() => null),
-              fetch('/api/v1/cms-config').then(r => r.json()).catch(() => null),
             ]);
-
-            if (resCms && resCms.data) {
-              if (resCms.data.heroConfig) setHeroConfig(resCms.data.heroConfig);
-              if (resCms.data.needsCardsList) setNeedsCardsList(resCms.data.needsCardsList);
-              if (resCms.data.partnersList) setPartnersList(resCms.data.partnersList);
-            }
 
             if (resActors && resActors.data && resActors.data.length > 0) setActorsList(resActors.data);
             if (resDeals && resDeals.data && resDeals.data.length > 0) {
@@ -474,6 +456,21 @@
         if (savedUser) {
           try { setCurrentUser(JSON.parse(savedUser)); } catch(e){}
         }
+
+        // Load saved CMS Hero config from Database API & localStorage
+        fetch('/api/v1/cms-config')
+          .then(r => r.json())
+          .then(data => {
+            if (data && data.data && data.data.hero) {
+              setHeroConfig(prev => ({ ...prev, ...data.data.hero }));
+            }
+          })
+          .catch(() => {
+            const savedHero = localStorage.getItem('nara_cms_hero');
+            if (savedHero) {
+              try { setHeroConfig(JSON.parse(savedHero)); } catch(e){}
+            }
+          });
 
         return () => clearInterval(activityInterval);
       }, []);
@@ -582,343 +579,330 @@
       return (
         <div className="min-h-screen flex flex-col justify-between bg-[#f8fafc] text-slate-900 relative selection:bg-[#1ac1b9] selection:text-slate-950">
           
-          {/* HEADER & NAV: CYAN VIBRANT BANNER WITH FLOATING CIRCULAR LOGO */}
-          <header className="sticky top-0 z-40 bg-gradient-to-r from-[#22d3ee] via-[#38bdf8] to-[#67e8f9] border-b border-cyan-400/60 shadow-lg px-4 sm:px-8 py-3.5 transition-all">
-            <div className="max-w-7xl mx-auto flex items-center justify-between relative">
-              
-              {/* Left: Floating Circular Logo Badge */}
-              <div 
-                onClick={() => setActiveTab('flow')}
-                className="flex items-center cursor-pointer group z-30"
-              >
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#a5f3fc] border-2 border-slate-700/60 shadow-xl flex items-center justify-center p-2 transform group-hover:scale-105 transition-all duration-300 -mb-6 sm:-mb-8 relative overflow-hidden ring-4 ring-cyan-200/50">
-                  <img 
-                    src="./nara-logo.png" 
-                    alt="NARA Logo" 
-                    className="w-full h-full object-contain"
-                  />
+          {/* HEADER & NAV */}
+          <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-2xl border-b border-slate-200/90 shadow-xs transition-all">
+            
+            {/* TOP BAR 1: TOKOPEDIA / FINTECH STYLE */}
+            <div className="bg-slate-900 text-slate-300 py-1.5 px-4 text-xs font-medium border-b border-slate-800">
+              <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-[11px] text-teal-300 font-semibold">
+                  <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                  <span>🛡️ Transaksi Terlindungi Escrow & Risk Management Legal 3-Lapis</span>
+                </div>
+
+                <div className="flex items-center gap-5 text-xs">
+                  <a 
+                    href="./tentang.html"
+                    className="hover:text-amber-300 transition-colors cursor-pointer"
+                  >
+                    Tentang NARA
+                  </a>
+
+                  <button 
+                    onClick={() => setIsListingModalOpen(true)}
+                    className="hover:text-teal-300 transition-colors cursor-pointer text-amber-300 font-bold"
+                  >
+                    + Pasang Listing
+                  </button>
+
+                  <button 
+                    onClick={() => setIsCareModalOpen(true)}
+                    className="hover:text-teal-300 transition-colors cursor-pointer flex items-center gap-1"
+                  >
+                    <span>🎧</span>
+                    <span>Nara Care 24/7</span>
+                  </button>
+
+                  <a 
+                    href="./admin.html"
+                    className="text-slate-400 hover:text-white transition-colors flex items-center gap-1 font-semibold"
+                  >
+                    <span>⚙️</span>
+                    <span>Admin CMS</span>
+                  </a>
                 </div>
               </div>
-
-              {/* Right: Navigation Buttons (BERANDA, LOGIN, DAFTAR) */}
-              <div className="flex items-center gap-2.5 sm:gap-3.5 text-xs sm:text-sm font-black">
-                
-                {/* Button: BERANDA */}
-                <button 
-                  onClick={() => setActiveTab('flow')}
-                  className="px-4 sm:px-6 py-2.5 bg-[#38bdf8] hover:bg-[#0284c7] hover:text-white text-slate-900 font-black rounded-xl border border-cyan-400/80 shadow-md shadow-cyan-600/20 transition-all cursor-pointer uppercase tracking-wider transform hover:-translate-y-0.5 active:translate-y-0"
-                >
-                  BERANDA
-                </button>
-
-                {/* Button: TENTANG NARA */}
-                <a 
-                  href="./tentang.html"
-                  className="hidden md:inline-block px-4 py-2.5 bg-[#38bdf8]/80 hover:bg-[#0284c7] hover:text-white text-slate-900 font-black rounded-xl border border-cyan-400/80 shadow-md shadow-cyan-600/20 transition-all uppercase tracking-wider transform hover:-translate-y-0.5"
-                >
-                  TENTANG NARA
-                </a>
-
-                {currentUser ? (
-                  <div className="flex items-center gap-2 bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-cyan-400 shadow-sm">
-                    <span className="text-xs font-black text-slate-900">{currentUser.name}</span>
-                    <button 
-                      onClick={handleLogout}
-                      className="text-xs text-rose-600 hover:text-rose-800 font-bold ml-1"
-                    >
-                      Keluar
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    {/* Button: LOGIN */}
-                    <button 
-                      onClick={() => {
-                        setAuthModalTab('login');
-                        setIsAuthModalOpen(true);
-                      }}
-                      className="px-4 sm:px-6 py-2.5 bg-[#38bdf8] hover:bg-[#0284c7] hover:text-white text-slate-900 font-black rounded-xl border border-cyan-400/80 shadow-md shadow-cyan-600/20 transition-all cursor-pointer uppercase tracking-wider transform hover:-translate-y-0.5 active:translate-y-0"
-                    >
-                      LOGIN
-                    </button>
-
-                    {/* Button: DAFTAR */}
-                    <button 
-                      onClick={() => {
-                        setAuthModalTab('register');
-                        setIsAuthModalOpen(true);
-                      }}
-                      className="px-4 sm:px-6 py-2.5 bg-[#38bdf8] hover:bg-[#0284c7] hover:text-white text-slate-900 font-black rounded-xl border border-cyan-400/80 shadow-md shadow-cyan-600/20 transition-all cursor-pointer uppercase tracking-wider transform hover:-translate-y-0.5 active:translate-y-0"
-                    >
-                      DAFTAR
-                    </button>
-                  </>
-                )}
-
-                {/* Quick Link to Admin */}
-                <a 
-                  href="./admin.html"
-                  className="p-2.5 bg-cyan-900/20 hover:bg-cyan-900/40 text-slate-900 hover:text-white rounded-xl border border-cyan-400/60 transition-all"
-                  title="Admin CMS"
-                >
-                  ⚙️
-                </a>
-
-              </div>
-
             </div>
-          </header>
 
-          {/* MAIN BODY CONTENT: TWO-COLUMN LAYOUT WITH SLEEK LEFT SIDEBAR */}
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
-            <div className="flex flex-col lg:flex-row gap-6 items-start">
-              
-              {/* === LEFT SIDEBAR NAVIGATION === */}
-              <aside className="w-full lg:w-72 shrink-0 space-y-4 sticky top-20 z-20">
+            {/* MAIN HEADER BAR */}
+            <div className="py-3 px-4">
+              <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3.5">
                 
-                {/* Search Box in Sidebar */}
-                <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs space-y-2">
-                  <span className="text-[11px] font-black text-slate-800 uppercase tracking-wider block flex items-center gap-1.5">
-                    <span>🔍</span>
-                    <span>Cari di Ekosistem</span>
-                  </span>
-                  <div className="relative">
-                    <input 
-                      type="text"
-                      placeholder="Cari proyek, notaris, dll..."
-                      value={globalSearchQuery}
-                      onChange={(e) => {
-                        setGlobalSearchQuery(e.target.value);
-                        if (e.target.value.length > 0) setActiveTab('marketplace');
-                      }}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3.5 pr-8 py-2 text-xs font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1ac1b9] focus:bg-white transition-all"
-                    />
-                    {globalSearchQuery && (
+                {/* Left: Official Logo */}
+                <div className="flex items-center gap-3 cursor-pointer shrink-0" onClick={() => setActiveTab('flow')}>
+                  <img 
+                    src="./nara-logo.png" 
+                    alt="NaraEcosystem® Logo" 
+                    className="h-10 sm:h-11 w-auto object-contain"
+                  />
+                  <div className="hidden lg:block border-l border-slate-300 pl-3">
+                    <span className="text-[10px] font-black text-teal-700 tracking-wider uppercase block">NARA HUB ECOSYSTEM</span>
+                    <span className="text-[9px] text-slate-500 font-semibold">Proptech & Escrow Marketplace</span>
+                  </div>
+                </div>
+
+                {/* Center: Kolom Pencarian Utama */}
+                <div className="relative flex-1 max-w-2xl w-full">
+                  <input 
+                    type="text"
+                    placeholder="Cari lahan, proyek JV, kontraktor, toko material, atau notaris..."
+                    value={globalSearchQuery}
+                    onChange={(e) => {
+                      setGlobalSearchQuery(e.target.value);
+                      if (e.target.value.length > 0) setActiveTab('marketplace');
+                    }}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-4 pr-16 py-2.5 text-xs font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1ac1b9] focus:bg-white transition-all shadow-inner"
+                  />
+                  <button 
+                    onClick={() => setActiveTab('marketplace')}
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-[#1ac1b9] hover:bg-[#16a39d] text-slate-950 font-extrabold px-3.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer shadow-sm"
+                  >
+                    Cari
+                  </button>
+                </div>
+
+                {/* Right: Auth Profile / Instant Onboarding */}
+                <div className="flex items-center gap-2.5 shrink-0">
+                  {currentUser ? (
+                    <div className="flex items-center gap-2 bg-slate-100 border border-slate-300 rounded-xl p-1.5 pr-3 shadow-xs">
+                      <div className="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center font-black text-xs shadow-xs">
+                        {currentUser.roleIcon || '👤'}
+                      </div>
+                      <div className="text-left">
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs font-extrabold text-slate-900 line-clamp-1">{currentUser.name}</span>
+                          <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        </div>
+                        <span className="text-[10px] text-teal-700 font-bold block">{currentUser.roleName}</span>
+                      </div>
                       <button 
-                        onClick={() => setGlobalSearchQuery('')}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                        onClick={handleLogout}
+                        className="ml-2 text-slate-400 hover:text-rose-600 text-xs font-bold p-1"
+                        title="Keluar"
                       >
                         ✕
                       </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Sidebar Menu 1: Kategori & Peran */}
-                <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-black text-teal-800 uppercase tracking-wider">Peran & Kategori</span>
-                    <span className="text-[10px] bg-teal-50 text-teal-700 px-1.5 py-0.5 rounded-md font-bold">12 Aktor</span>
-                  </div>
-                  
-                  <div className="space-y-1 text-xs font-extrabold">
-                    {[
-                      { id: 'investor', name: '💎 Investor Proyek', tab: 'marketplace', cat: 'projects' },
-                      { id: 'landowner', name: '📍 Pemilik Lahan', tab: 'marketplace', cat: 'landowner' },
-                      { id: 'contractors', name: '🔨 Kontraktor Utama', tab: 'marketplace', cat: 'contractors' },
-                      { id: 'materials', name: '🧱 Toko Bangunan & Material', tab: 'marketplace', cat: 'materials' },
-                      { id: 'notary', name: '📜 Notaris & PPAT', tab: 'marketplace', cat: 'notary' },
-                      { id: 'architects', name: '📐 Arsitek & Desain', tab: 'marketplace', cat: 'architects' },
-                    ].map(item => (
-                      <button
-                        key={item.id}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <button 
                         onClick={() => {
-                          setActiveTab(item.tab);
-                          setActiveCategory(item.cat);
+                          setAuthModalTab('login');
+                          setIsAuthModalOpen(true);
                         }}
-                        className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center justify-between cursor-pointer ${activeTab === item.tab && activeCategory === item.cat ? 'bg-gradient-to-r from-teal-700 to-emerald-800 text-white shadow-xs font-black' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950'}`}
+                        className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-800 font-extrabold text-xs rounded-xl border border-slate-300 shadow-xs transition-all cursor-pointer"
                       >
-                        <span>{item.name}</span>
-                        <span className="text-[10px] opacity-70">➔</span>
+                        Masuk
                       </button>
-                    ))}
-                  </div>
+
+                      <button 
+                        onClick={() => {
+                          setAuthModalTab('register');
+                          setIsAuthModalOpen(true);
+                        }}
+                        className="px-5 py-2 bg-gradient-to-r from-[#1ac1b9] to-[#0d9488] hover:from-[#16a39d] hover:to-[#0f766e] text-slate-950 font-black text-xs rounded-xl shadow-md shadow-teal-500/20 transition-all cursor-pointer flex items-center gap-1.5"
+                      >
+                        <span>✨ Daftar Cepat</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
 
-                {/* Sidebar Menu 2: Fitur Utama & Transaksi */}
-                <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs space-y-2">
-                  <span className="text-[11px] font-black text-slate-800 uppercase tracking-wider block">Menu Transaksi</span>
-                  <div className="space-y-1 text-xs font-bold">
-                    <button
-                      onClick={() => { setActiveTab('marketplace'); setActiveCategory('projects'); }}
-                      className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer ${activeTab === 'marketplace' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-700 hover:bg-slate-100'}`}
-                    >
-                      <span>🏢</span>
-                      <span>Marketplace Listing</span>
-                      <span className="ml-auto text-[9px] bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded-full font-black">A1</span>
-                    </button>
+              </div>
+            </div>
 
-                    <button
-                      onClick={() => setActiveTab('verification')}
-                      className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer ${activeTab === 'verification' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-700 hover:bg-slate-100'}`}
-                    >
-                      <span>🛡️</span>
-                      <span>Hub Verifikasi 3-Lapis</span>
-                    </button>
+            {/* QUICK NAVIGATION TABS */}
+            <div className="bg-slate-50/90 border-t border-slate-200/80 px-4 py-2">
+              <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto text-xs font-bold">
+                <button 
+                  onClick={() => setActiveTab('flow')}
+                  className={`px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'flow' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-950 hover:bg-slate-200/70'}`}
+                >
+                  <span>🏛️ Beranda Ekosistem</span>
+                </button>
 
-                    <button
-                      onClick={() => setActiveTab('escrow')}
-                      className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer ${activeTab === 'escrow' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-700 hover:bg-slate-100'}`}
-                    >
-                      <span>🔒</span>
-                      <span>Escrow Deal Room</span>
-                    </button>
+                <button 
+                  onClick={() => setActiveTab('marketplace')}
+                  className={`px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'marketplace' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-950 hover:bg-slate-200/70'}`}
+                >
+                  <span>🏢 Marketplace Listing</span>
+                  <span className="bg-amber-400 text-slate-950 text-[10px] px-1.5 py-0.2 rounded-full font-black">A1 Deals</span>
+                </button>
 
-                    <button
-                      onClick={() => setIsCalculatorOpen(true)}
-                      className="w-full text-left px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 transition-all flex items-center gap-2 cursor-pointer font-black"
-                    >
-                      <span>🧮</span>
-                      <span>Simulator Fee NARA</span>
-                    </button>
-                  </div>
-                </div>
+                <button 
+                  onClick={() => setActiveTab('verification')}
+                  className={`px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'verification' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-950 hover:bg-slate-200/70'}`}
+                >
+                  <span>🛡️ Hub Verifikasi 3-Lapis</span>
+                </button>
 
-                {/* Sidebar Menu 3: Info & Bantuan */}
-                <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-4 rounded-2xl shadow-sm space-y-3">
-                  <div className="flex items-center gap-2 text-xs font-black text-amber-300">
-                    <span>📢</span>
-                    <span>Pusat Berita & Bantuan</span>
-                  </div>
-                  <div className="space-y-1.5 text-xs font-semibold">
-                    <a 
-                      href="./berita.html"
-                      className="block text-slate-200 hover:text-white hover:underline transition-colors flex items-center justify-between"
-                    >
-                      <span>📖 Baca Siaran Pers Resmi</span>
-                      <span>↗</span>
-                    </a>
-                    <a 
-                      href="./tentang.html"
-                      className="block text-slate-200 hover:text-white hover:underline transition-colors flex items-center justify-between"
-                    >
-                      <span>🏛️ Tentang Ekosistem NARA</span>
-                      <span>↗</span>
-                    </a>
-                    <button 
-                      onClick={() => setIsCareModalOpen(true)}
-                      className="w-full text-left text-teal-300 hover:text-teal-200 hover:underline transition-colors flex items-center justify-between cursor-pointer"
-                    >
-                      <span>🎧 Nara Care 24/7 Hotline</span>
-                      <span>➔</span>
-                    </button>
-                  </div>
-                </div>
+                <button 
+                  onClick={() => setActiveTab('escrow')}
+                  className={`px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'escrow' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-950 hover:bg-slate-200/70'}`}
+                >
+                  <span>🔒 Escrow Deal Room</span>
+                </button>
 
-              </aside>
+                <button 
+                  onClick={() => setIsCalculatorOpen(true)}
+                  className="ml-auto px-3.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 font-extrabold"
+                >
+                  <span>🧮 Simulator Fee NARA</span>
+                </button>
+              </div>
+            </div>
 
-              {/* === RIGHT MAIN CONTENT AREA === */}
-              <div className="flex-1 min-w-0 space-y-6 w-full">
+          </header>
+
+          {/* MAIN BODY CONTENT */}
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8 flex-1 w-full">
+            
+            {/* TAB 1: FLOW VISUALIZER & LUXURY HERO */}
+            {activeTab === 'flow' && (
+              <div className="space-y-8">
                 
-                {/* TAB 1: FLOW VISUALIZER & COMPACT LUXURY HERO */}
-                {activeTab === 'flow' && (
-                  <div className="space-y-6">
+                {/* MODERN LUXURY HERO SECTION */}
+                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#064e3b] via-[#047857] to-[#022c22] border border-emerald-500/30 p-6 sm:p-8 lg:p-10 shadow-2xl text-white">
+                  
+                  {/* Ambient Light Orbs for Depth Glow */}
+                  <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#1ac1b9]/25 rounded-full blur-3xl pointer-events-none animate-pulse-glow"></div>
+                  <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+                  <div className="relative z-10 space-y-6">
                     
-                    {/* COMPACT LUXURY HERO SECTION */}
-                    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#064e3b] via-[#047857] to-[#022c22] border border-emerald-500/30 p-4 sm:p-5 lg:p-6 shadow-xl text-white">
+                    {/* Persona Toggle Bar (Interactive Instant Personalization) */}
+                    <div className="flex flex-wrap items-center gap-2 bg-emerald-950/70 backdrop-blur-md p-1.5 rounded-2xl border border-emerald-400/30 w-fit">
+                      <span className="text-[11px] font-bold text-amber-300 px-3 uppercase tracking-wider hidden sm:inline">Pilih Peran:</span>
                       
-                      {/* Ambient Glow */}
-                      <div className="absolute -top-20 -right-20 w-72 h-72 bg-[#1ac1b9]/20 rounded-full blur-3xl pointer-events-none"></div>
-                      <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
+                      {[
+                        { id: 'investor', label: '💰 Investor Proyek', desc: 'ROI 14-25%' },
+                        { id: 'developer', label: '📍 Pemilik Lahan', desc: 'Joint Venture' },
+                        { id: 'kontraktor', label: '🔨 Kontraktor', desc: 'Dana Escrow' },
+                        { id: 'notaris', label: '📜 Notaris & Legal', desc: 'Due Diligence' }
+                      ].map(p => (
+                        <button
+                          key={p.id}
+                          onClick={() => setHeroPersona(p.id)}
+                          className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${heroPersona === p.id ? 'bg-[#1ac1b9] text-slate-950 shadow-md scale-105' : 'text-emerald-100 hover:text-white hover:bg-emerald-900/60'}`}
+                        >
+                          <span>{p.label}</span>
+                        </button>
+                      ))}
+                    </div>
 
-                      <div className="relative z-10 space-y-4">
+                    {/* Main Headline & Visual Grid */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                      
+                      {/* Left: Dynamic Content by Persona */}
+                      <div className="lg:col-span-7 space-y-4">
                         
-                        {/* Compact Headline News & Press Release Bar */}
-                        <div className="bg-emerald-950/80 backdrop-blur-md p-2.5 sm:p-3 rounded-xl border border-teal-400/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 shadow-sm">
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <span className="bg-amber-400 text-slate-950 text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider shrink-0 flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-slate-950 animate-ping"></span>
-                              <span>{heroConfig.headlineCategory || 'BERITA TERBARU'}</span>
-                            </span>
-                            <h4 className="text-xs font-black text-white truncate">
-                              {heroConfig.headingPre} <span className="text-amber-300">{heroConfig.headingHighlight}</span>
-                            </h4>
-                          </div>
-
-                          <a 
-                            href="./berita.html"
-                            className="shrink-0 px-3 py-1 bg-[#1ac1b9] hover:bg-[#16a39d] text-slate-950 font-black text-[11px] rounded-lg shadow-sm transition-all flex items-center gap-1 self-end sm:self-auto"
-                          >
-                            <span>Baca Lengkap</span>
-                            <span>➔</span>
-                          </a>
+                        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-400/20 border border-amber-300/40 text-amber-300 text-xs font-black tracking-wide">
+                          <span>✨</span>
+                          <span>{currentPersona.tag}</span>
                         </div>
 
-                        {/* Streamlined Main Headline & Visual Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
-                          
-                          {/* Left: Headline & Actions */}
-                          <div className="md:col-span-7 space-y-2.5">
-                            
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-400/20 border border-amber-300/40 text-amber-300 text-[11px] font-black">
-                              <span>✨</span>
-                              <span>{currentPersona.tag}</span>
-                            </div>
+                        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight text-white">
+                          {currentPersona.title} <span className="text-amber-300 block">{currentPersona.highlight}</span>
+                        </h1>
 
-                            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black leading-tight tracking-tight text-white">
-                              {currentPersona.title} <span className="text-amber-300 block">{currentPersona.highlight}</span>
-                            </h1>
+                        <p className="text-sm sm:text-base text-emerald-100 leading-relaxed font-medium max-w-xl">
+                          {currentPersona.desc}
+                        </p>
 
-                            <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed font-medium line-clamp-2">
-                              {currentPersona.desc}
-                            </p>
-
-                            {/* Action Buttons */}
-                            <div className="pt-1 flex flex-wrap gap-2.5">
-                              <button 
-                                onClick={currentPersona.action}
-                                className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-1.5 transform hover:-translate-y-0.5"
-                              >
-                                <span>🚀</span>
-                                <span>{currentPersona.ctaText}</span>
-                              </button>
-
-                              <button 
-                                onClick={() => {
-                                  setAuthModalTab('register');
-                                  setIsAuthModalOpen(true);
-                                }}
-                                className="px-4 py-2 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-400/40 text-white font-extrabold text-xs rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
-                              >
-                                <span>⚡ Daftar Cepat</span>
-                              </button>
-                            </div>
-
+                        {/* Guarantee Highlight Card */}
+                        <div className="glass-luxury-dark px-4 py-3 rounded-2xl border border-teal-300/30 flex items-center gap-3 text-xs">
+                          <span className="text-2xl">🛡️</span>
+                          <div>
+                            <span className="font-extrabold text-amber-300 block">Jaminan Transaksi Resmi NARA:</span>
+                            <span className="text-slate-200">Dana ditahan di Rekening Bersama Escrow & audit legalitas 3-lapis oleh Notaris bersertifikasi.</span>
                           </div>
+                        </div>
 
-                          {/* Right: Compact Showcase Card */}
-                          <div className="md:col-span-5 relative">
-                            <div className="glass-luxury-dark rounded-2xl p-3 border border-white/20 shadow-xl space-y-2.5 relative overflow-hidden">
-                              <div className="relative rounded-xl overflow-hidden border border-white/20 h-28 group">
-                                <img 
-                                  src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80" 
-                                  alt="NARA Deal Closing" 
-                                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent flex flex-col justify-end p-2.5">
-                                  <span className="text-[11px] font-black text-amber-300">Cluster Premium BSD</span>
-                                  <span className="text-[9px] text-slate-200">Joint Venture ROI 16.5% p.a. • Escrow Verified</span>
-                                </div>
-                              </div>
+                        {/* Action Buttons */}
+                        <div className="pt-2 flex flex-wrap gap-3">
+                          <button 
+                            onClick={currentPersona.action}
+                            className="px-6 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm shadow-xl shadow-amber-500/25 transition-all cursor-pointer flex items-center gap-2 transform hover:-translate-y-0.5"
+                          >
+                            <span>🚀</span>
+                            <span>{currentPersona.ctaText}</span>
+                          </button>
 
-                              <div className="grid grid-cols-2 gap-2 text-[11px]">
-                                <div className="bg-white/10 p-1.5 rounded-lg border border-white/10 text-center">
-                                  <span className="text-[9px] text-slate-300 block">Nilai Proyek</span>
-                                  <strong className="text-white font-extrabold">Rp 12,5 M</strong>
-                                </div>
-                                <div className="bg-white/10 p-1.5 rounded-lg border border-white/10 text-center">
-                                  <span className="text-[9px] text-slate-300 block">Proteksi</span>
-                                  <strong className="text-amber-300 font-extrabold">100% Escrow</strong>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
+                          <button 
+                            onClick={() => {
+                              setAuthModalTab('register');
+                              setIsAuthModalOpen(true);
+                            }}
+                            className="px-5 py-3 rounded-2xl bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-400/40 text-white font-extrabold text-xs sm:text-sm transition-all cursor-pointer flex items-center gap-2"
+                          >
+                            <span>⚡ Daftar Gratis (30 Detik)</span>
+                          </button>
                         </div>
 
                       </div>
+
+                      {/* Right: Modern Luxury Glass Showcase Card */}
+                      <div className="lg:col-span-5 relative flex justify-center">
+                        <div className="w-full max-w-md glass-luxury-dark rounded-3xl p-5 border border-white/20 shadow-2xl space-y-4 relative overflow-hidden">
+                          
+                          <div className="flex justify-between items-center border-b border-white/10 pb-3">
+                            <span className="text-[11px] font-black text-teal-300 uppercase tracking-wider">⚡ Live Deal Highlights</span>
+                            <span className="bg-emerald-500/30 text-emerald-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-emerald-400/30 flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                              Verified NARA
+                            </span>
+                          </div>
+
+                          <div className="relative rounded-2xl overflow-hidden border border-white/20 h-44 group">
+                            <img 
+                              src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80" 
+                              alt="NARA Deal Closing Handshake" 
+                              className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent flex flex-col justify-end p-3.5">
+                              <span className="text-xs font-black text-amber-300">Cluster Premium BSD - Phase 2</span>
+                              <span className="text-[11px] text-slate-200">Joint Venture ROI 16.5% p.a. • Notaris Penjamin Ready</span>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div className="bg-white/10 backdrop-blur-sm p-2.5 rounded-xl border border-white/10">
+                              <span className="text-[10px] text-slate-300 block">Nilai Proyek</span>
+                              <strong className="text-white font-extrabold">Rp 12,5 Miliar</strong>
+                            </div>
+                            <div className="bg-white/10 backdrop-blur-sm p-2.5 rounded-xl border border-white/10">
+                              <span className="text-[10px] text-slate-300 block">Proteksi Dana</span>
+                              <strong className="text-amber-300 font-extrabold">100% Escrow Active</strong>
+                            </div>
+                          </div>
+
+                        </div>
+                      </div>
+
                     </div>
 
+                  </div>
+                </div>
+
+                {/* FLOATING LIVE STATS BAR (High Authority & Trust Signals) */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[
+                    { number: 'Rp 48,5 M+', label: 'Total Transaksi Terfasilitasi', icon: '💼', color: 'text-teal-700' },
+                    { number: '100% Aman', label: 'Rekening Bersama Escrow', icon: '🛡️', color: 'text-emerald-700' },
+                    { number: '3-Lapis', label: 'Audit Legalitas & SHM BPN', icon: '📑', color: 'text-blue-700' },
+                    { number: '1.250+', label: 'Mitra & Investor Terverifikasi', icon: '👥', color: 'text-amber-700' },
+                  ].map((stat, idx) => (
+                    <div key={idx} className="glass-luxury p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3.5 group hover:border-teal-400 transition-all">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-2xl shrink-0 group-hover:scale-110 transition-transform shadow-xs">
+                        {stat.icon}
+                      </div>
+                      <div>
+                        <span className={`text-lg sm:text-xl font-black ${stat.color} block tracking-tight`}>{stat.number}</span>
+                        <span className="text-xs text-slate-500 font-semibold leading-tight">{stat.label}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
                 {/* 12 KATEGORI AKTOR EKOSISTEM */}
                 <div className="space-y-4">
@@ -1316,7 +1300,6 @@
                     </div>
                   ))}
                 </div>
-              </div>
               </div>
             </div>
 
