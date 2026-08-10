@@ -584,13 +584,7 @@
             
             {/* TOP BAR 1: TOKOPEDIA / FINTECH STYLE */}
             <div className="bg-slate-900 text-slate-300 py-1.5 px-4 text-xs font-medium border-b border-slate-800">
-              <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2 text-[11px] text-teal-300 font-semibold">
-                  <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                  <span>🛡️ Transaksi Terlindungi Escrow & Risk Management Legal 3-Lapis</span>
-                </div>
-
-                <div className="flex items-center gap-5 text-xs">
+              <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-end gap-5 text-xs">
                   <a 
                     href="./tentang.html"
                     className="hover:text-amber-300 transition-colors cursor-pointer"
@@ -622,7 +616,6 @@
                   </a>
                 </div>
               </div>
-            </div>
 
             {/* MAIN HEADER BAR */}
             <div className="py-3 px-4">
