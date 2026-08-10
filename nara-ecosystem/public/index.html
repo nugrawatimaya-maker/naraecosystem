@@ -579,29 +579,29 @@
       return (
         <div className="min-h-screen flex flex-col justify-between bg-[#f8fafc] text-slate-900 relative selection:bg-[#1ac1b9] selection:text-slate-950">
           
-          {/* HEADER & NAV */}
-          <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-2xl border-b border-slate-200/90 shadow-xs transition-all">
+          {/* HEADER & NAV: CLEAN WHITE WITH ELEGANT SHADOW SEPARATION */}
+          <header className="sticky top-0 z-40 bg-white border-b border-slate-200/90 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.08),0_4px_6px_-2px_rgba(0,0,0,0.04)] transition-all">
             
-            {/* TOP BAR 1: TOKOPEDIA / FINTECH STYLE */}
-            <div className="bg-slate-900 text-slate-300 py-1.5 px-4 text-xs font-medium border-b border-slate-800">
+            {/* TOP BAR: LIGHT CLEAN ACCENT */}
+            <div className="bg-slate-50 text-slate-600 py-1.5 px-4 text-xs font-semibold border-b border-slate-200/70">
               <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-end gap-5 text-xs">
                   <a 
                     href="./tentang.html"
-                    className="hover:text-amber-300 transition-colors cursor-pointer"
+                    className="hover:text-teal-700 transition-colors cursor-pointer"
                   >
                     Tentang NARA
                   </a>
 
                   <button 
                     onClick={() => setIsListingModalOpen(true)}
-                    className="hover:text-teal-300 transition-colors cursor-pointer text-amber-300 font-bold"
+                    className="hover:text-amber-700 transition-colors cursor-pointer text-amber-600 font-black"
                   >
                     + Pasang Listing
                   </button>
 
                   <button 
                     onClick={() => setIsCareModalOpen(true)}
-                    className="hover:text-teal-300 transition-colors cursor-pointer flex items-center gap-1"
+                    className="hover:text-teal-700 transition-colors cursor-pointer flex items-center gap-1"
                   >
                     <span>🎧</span>
                     <span>Nara Care 24/7</span>
@@ -609,7 +609,7 @@
 
                   <a 
                     href="./admin.html"
-                    className="text-slate-400 hover:text-white transition-colors flex items-center gap-1 font-semibold"
+                    className="text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1 font-bold"
                   >
                     <span>⚙️</span>
                     <span>Admin CMS</span>
