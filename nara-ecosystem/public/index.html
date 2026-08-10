@@ -783,35 +783,6 @@
                           {currentPersona.desc}
                         </p>
 
-                        {/* Guarantee Highlight Card */}
-                        <div className="glass-luxury-dark px-4 py-3 rounded-2xl border border-teal-300/30 flex items-center gap-3 text-xs">
-                          <span className="text-2xl">🛡️</span>
-                          <div>
-                            <span className="font-extrabold text-amber-300 block">Jaminan Transaksi Resmi NARA:</span>
-                            <span className="text-slate-200">Dana ditahan di Rekening Bersama Escrow & audit legalitas 3-lapis oleh Notaris bersertifikasi.</span>
-                          </div>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="pt-2 flex flex-wrap gap-3">
-                          <button 
-                            onClick={currentPersona.action}
-                            className="px-6 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm shadow-xl shadow-amber-500/25 transition-all cursor-pointer flex items-center gap-2 transform hover:-translate-y-0.5"
-                          >
-                            <span>🚀</span>
-                            <span>{currentPersona.ctaText}</span>
-                          </button>
-
-                          <button 
-                            onClick={() => {
-                              setAuthModalTab('register');
-                              setIsAuthModalOpen(true);
-                            }}
-                            className="px-5 py-3 rounded-2xl bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-400/40 text-white font-extrabold text-xs sm:text-sm transition-all cursor-pointer flex items-center gap-2"
-                          >
-                            <span>⚡ Daftar Gratis (30 Detik)</span>
-                          </button>
-                        </div>
 
                       </div>
 
