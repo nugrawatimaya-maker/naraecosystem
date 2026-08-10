@@ -611,18 +611,12 @@
             {/* TOP BAR: LIGHT CLEAN ACCENT */}
             <div className="bg-slate-50 text-slate-600 py-1.5 px-4 text-xs font-semibold border-b border-slate-200/70">
               <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-end gap-5 text-xs">
-                  <a 
-                    href="./tentang.html"
-                    className="hover:text-teal-700 transition-colors cursor-pointer"
-                  >
-                    Tentang NARA
-                  </a>
-
                   <button 
                     onClick={() => setIsListingModalOpen(true)}
-                    className="hover:text-amber-700 transition-colors cursor-pointer text-amber-600 font-black"
+                    className="hover:text-amber-700 transition-colors cursor-pointer text-amber-600 font-extrabold flex items-center gap-1"
                   >
-                    + Pasang Listing
+                    <span>➕</span>
+                    <span>Mulai Pasang Listing</span>
                   </button>
 
                   <button 
