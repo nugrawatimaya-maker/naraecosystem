@@ -24,13 +24,17 @@ return new class extends Migration
             if (!Schema::hasColumn('users', 'role')) {
                 $table->string('role')->default('investor')->after('phone');
             }
+            if (!Schema::hasColumn('users', 'profile_data')) {
+                $table->json('profile_data')->nullable()->after('role');
+            }
             if (!Schema::hasColumn('users', 'google_token')) {
-                $table->text('google_token')->nullable()->after('role');
+                $table->text('google_token')->nullable()->after('profile_data');
             }
             if (!Schema::hasColumn('users', 'google_refresh_token')) {
                 $table->text('google_refresh_token')->nullable()->after('google_token');
             }
-            // Jadikan password nullable untuk login via Google SSO
+            // Jadikan email & password nullable
+            $table->string('email')->nullable()->change();
             $table->string('password')->nullable()->change();
         });
     }

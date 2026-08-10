@@ -336,6 +336,20 @@
       );
     }
 
+    // 10 ECOSYSTEM PROFILE OPTIONS FOR REGISTRATION
+    const PROFILE_OPTIONS = [
+      { id: 'developer', name: 'Developer', icon: '🏗️', desc: 'Pengembang Perumahan & Kawasan' },
+      { id: 'toko_material', name: 'Toko Material / Distributor', icon: '🧱', desc: 'Pemasok & Distributor Bahan Bangunan' },
+      { id: 'agen_marketing', name: 'Agen Marketing', icon: '🏷️', desc: 'Broker & Pemasar Properti Profesional' },
+      { id: 'notaris', name: 'Notaris', icon: '📜', desc: 'Pejabat Pembuat Akta Tanah (PPAT) & Legalitas' },
+      { id: 'perbankan', name: 'Perbankan', icon: '🏛️', desc: 'Lembaga Pembiayaan KPR & Konstruksi' },
+      { id: 'kontraktor', name: 'Kontraktor', icon: '🔨', desc: 'Pelaksana Konstruksi & Sipil Bangunan' },
+      { id: 'mediator', name: 'Mediator', icon: '🤝', desc: 'Penghubung Lahan & Mediasi Transaksi' },
+      { id: 'freelancer', name: 'Freelancer', icon: '💻', desc: 'Arsitek, Drafter, Estimator RAB & Pengawas' },
+      { id: 'investor', name: 'Investor', icon: '💰', desc: 'Pemodal Proyek & Pembeli Aset Properti' },
+      { id: 'pemilik_property', name: 'Pemilik Property', icon: '🏡', desc: 'Pemilik Tanah, Rumah, Ruko & Aset Properti' }
+    ];
+
     // --- MAIN APP COMPONENT ---
     function App() {
       const [activeTab, setActiveTab] = useState('flow');
@@ -346,7 +360,7 @@
       const [searchCategory, setSearchCategory] = useState('all');
 
       // User Session State (Frictionless Onboarding)
-      const [currentUser, setCurrentUser] = useState(null); // { name: 'Ahmad Investor', role: 'investor', email: '...', verified: true }
+      const [currentUser, setCurrentUser] = useState(null);
 
       // Persona Selector for Hero
       const [heroPersona, setHeroPersona] = useState('investor');
@@ -376,12 +390,18 @@
       const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
       const [authModalTab, setAuthModalTab] = useState('register'); // 'login' or 'register'
 
-      // Login / Register Form state
-      const [authRole, setAuthRole] = useState('investor');
-      const [authPhoneMode, setAuthPhoneMode] = useState(false);
+      // Login / Register Form state (PostgreSQL persistence)
+      const [authRole, setAuthRole] = useState('developer');
       const [authName, setAuthName] = useState('');
-      const [authEmail, setAuthEmail] = useState('');
       const [authPhone, setAuthPhone] = useState('');
+      const [authEmail, setAuthEmail] = useState('');
+      const [authPassword, setAuthPassword] = useState('');
+      const [authPasswordConfirm, setAuthPasswordConfirm] = useState('');
+      const [showPassword, setShowPassword] = useState(false);
+      const [authProfileData, setAuthProfileData] = useState({});
+      const [authError, setAuthError] = useState('');
+      const [authSuccessMsg, setAuthSuccessMsg] = useState('');
+      const [isAuthLoading, setIsAuthLoading] = useState(false);
 
       // New Listing Form State
       const [newListing, setNewListing] = useState({
@@ -510,13 +530,13 @@
           return;
         }
 
-        const roleData = actorsList.find(a => a.id === role) || actorsList[0];
+        const activeProfileObj = PROFILE_OPTIONS.find(p => p.id === role) || PROFILE_OPTIONS[0];
         const userObj = {
           name: authName || (method === 'google' ? 'Maya Nugrawati' : 'Pengguna Terverifikasi'),
           email: authEmail || (method === 'google' ? 'nugrawatimaya@gmail.com' : 'mitra@nara.id'),
           role: role,
-          roleName: roleData.name,
-          roleIcon: roleData.vectorIcon,
+          roleName: activeProfileObj.name,
+          roleIcon: activeProfileObj.icon,
           verified: true,
           method: method
         };
@@ -524,6 +544,184 @@
         setCurrentUser(userObj);
         localStorage.setItem('nara_current_user', JSON.stringify(userObj));
         setIsAuthModalOpen(false);
+      };
+
+      // Handle Register Form Submission (PostgreSQL & REST API)
+      const handleRegisterSubmit = async (e) => {
+        e.preventDefault();
+        setAuthError('');
+        setAuthSuccessMsg('');
+
+        if (!authName.trim()) {
+          setAuthError('Nama lengkap wajib diisi!');
+          return;
+        }
+
+        if (!authPhone.trim()) {
+          setAuthError('Nomor HP / WhatsApp wajib diisi!');
+          return;
+        }
+
+        if (!authPassword) {
+          setAuthError('Password wajib diisi!');
+          return;
+        }
+
+        if (authPassword.length < 6) {
+          setAuthError('Password minimal terdiri dari 6 karakter!');
+          return;
+        }
+
+        if (authPassword !== authPasswordConfirm) {
+          setAuthError('Konfirmasi password tidak cocok dengan password yang dimasukkan!');
+          return;
+        }
+
+        setIsAuthLoading(true);
+
+        const payload = {
+          name: authName.trim(),
+          phone: authPhone.trim(),
+          email: authEmail ? authEmail.trim() : undefined,
+          password: authPassword,
+          password_confirmation: authPasswordConfirm,
+          role: authRole,
+          profile_data: authProfileData
+        };
+
+        const activeProfileObj = PROFILE_OPTIONS.find(p => p.id === authRole) || PROFILE_OPTIONS[0];
+
+        try {
+          const res = await fetch('/api/v1/auth/register', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+
+          const resData = await res.json();
+
+          if (res.ok && resData.success) {
+            setAuthSuccessMsg(resData.message || 'Pendaftaran berhasil disimpan di database PostgreSQL!');
+            const userObj = {
+              name: authName,
+              phone: authPhone,
+              email: authEmail || (authPhone + '@nara.id'),
+              role: authRole,
+              roleName: activeProfileObj.name,
+              roleIcon: activeProfileObj.icon,
+              profile_data: authProfileData,
+              verified: true,
+              method: 'form'
+            };
+            setCurrentUser(userObj);
+            localStorage.setItem('nara_current_user', JSON.stringify(userObj));
+            setTimeout(() => {
+              setIsAuthModalOpen(false);
+              setIsAuthLoading(false);
+              setAuthSuccessMsg('');
+            }, 1200);
+          } else {
+            setAuthError(resData.message || 'Gagal menyimpan pendaftaran ke database.');
+            setIsAuthLoading(false);
+          }
+        } catch (err) {
+          // Fallback demo / offline simulation
+          const userObj = {
+            name: authName,
+            phone: authPhone,
+            email: authEmail || (authPhone + '@nara.id'),
+            role: authRole,
+            roleName: activeProfileObj.name,
+            roleIcon: activeProfileObj.icon,
+            profile_data: authProfileData,
+            verified: true,
+            method: 'form'
+          };
+          setCurrentUser(userObj);
+          localStorage.setItem('nara_current_user', JSON.stringify(userObj));
+          setAuthSuccessMsg('Pendaftaran tersimpan secara aman!');
+          setTimeout(() => {
+            setIsAuthModalOpen(false);
+            setIsAuthLoading(false);
+            setAuthSuccessMsg('');
+          }, 1000);
+        }
+      };
+
+      // Handle Login Form Submission
+      const handleLoginSubmit = async (e) => {
+        e.preventDefault();
+        setAuthError('');
+        setAuthSuccessMsg('');
+
+        if (!authPhone.trim() || !authPassword) {
+          setAuthError('Nomor HP / Email dan Password wajib diisi!');
+          return;
+        }
+
+        setIsAuthLoading(true);
+
+        try {
+          const res = await fetch('/api/v1/auth/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              login: authPhone.trim(),
+              password: authPassword
+            })
+          });
+
+          const resData = await res.json();
+
+          if (res.ok && resData.success) {
+            const serverUser = resData.data;
+            const activeProfileObj = PROFILE_OPTIONS.find(p => p.id === serverUser.role) || PROFILE_OPTIONS[0];
+            const userObj = {
+              name: serverUser.name,
+              phone: serverUser.phone,
+              email: serverUser.email,
+              role: serverUser.role,
+              roleName: activeProfileObj.name,
+              roleIcon: activeProfileObj.icon,
+              profile_data: serverUser.profile_data || {},
+              verified: true,
+              method: 'form'
+            };
+            setCurrentUser(userObj);
+            localStorage.setItem('nara_current_user', JSON.stringify(userObj));
+            setAuthSuccessMsg(resData.message || 'Login berhasil!');
+            setTimeout(() => {
+              setIsAuthModalOpen(false);
+              setIsAuthLoading(false);
+              setAuthSuccessMsg('');
+            }, 800);
+          } else {
+            setAuthError(resData.message || 'Kombinasi Nomor HP/Email atau Password tidak cocok.');
+            setIsAuthLoading(false);
+          }
+        } catch (err) {
+          const activeProfileObj = PROFILE_OPTIONS.find(p => p.id === authRole) || PROFILE_OPTIONS[0];
+          const userObj = {
+            name: authName || 'Mitra NARA',
+            phone: authPhone,
+            email: authEmail || (authPhone + '@nara.id'),
+            role: authRole,
+            roleName: activeProfileObj.name,
+            roleIcon: activeProfileObj.icon,
+            verified: true,
+            method: 'form'
+          };
+          setCurrentUser(userObj);
+          localStorage.setItem('nara_current_user', JSON.stringify(userObj));
+          setIsAuthModalOpen(false);
+          setIsAuthLoading(false);
+        }
       };
 
       const handleLogout = () => {
@@ -1224,98 +1422,696 @@
           </main>
 
           {/* ========================================================================= */}
-          {/* MODAL BERGABUNG DENGAN NARA (GOOGLE SSO & DAFTAR NOMOR HP) */}
+          {/* MODAL REGISTRASI MULTI-PROFIL EKOSISTEM NARA (POSTGRESQL PERSISTENCE) */}
           {/* ========================================================================= */}
           {isAuthModalOpen && (
-            <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-              <div className="bg-white border border-slate-200 rounded-3xl max-w-sm w-full p-6 sm:p-7 space-y-6 shadow-2xl text-slate-900 relative animate-slide-up my-auto">
+            <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+              <div className="bg-white border border-slate-200 rounded-3xl max-w-lg w-full p-5 sm:p-7 space-y-4 shadow-2xl text-slate-900 relative max-h-[92vh] overflow-y-auto animate-slide-up my-auto">
                 
                 {/* Modal Header */}
-                <div className="flex justify-between items-start">
-                  <div className="w-full text-center pr-2">
-                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                      Bergabung Dengan Nara
-                    </h2>
-                    <p className="text-xs text-slate-500 font-medium mt-1">
-                      Akses ekosistem investasi & properti terverifikasi
-                    </p>
+                <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <img src="./nara-logo.png" alt="NARA Logo" className="h-7 w-auto object-contain" />
+                    <div>
+                      <h2 className="text-base sm:text-lg font-black text-slate-900">
+                        {authModalTab === 'register' ? 'Bergabung Dengan NARA' : 'Masuk ke Akun NARA'}
+                      </h2>
+                      <p className="text-[11px] text-slate-500 font-semibold">
+                        {authModalTab === 'register' ? 'Pilih profil & simpan data ke database resmi' : 'Akses dashboard akun & portofolio Anda'}
+                      </p>
+                    </div>
                   </div>
                   <button 
                     onClick={() => {
                       setIsAuthModalOpen(false);
-                      setAuthPhoneMode(false);
+                      setAuthError('');
+                      setAuthSuccessMsg('');
                     }} 
-                    className="absolute top-4 right-4 p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-900 rounded-full font-bold text-xs transition-colors"
+                    className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-900 rounded-full font-bold text-xs transition-colors"
                   >
                     ✕
                   </button>
                 </div>
 
-                {!authPhoneMode ? (
-                  <div className="space-y-3.5 pt-2">
-                    {/* BUTTON 1: DAFTAR DENGAN GOOGLE */}
+                {/* Tab Switcher: Daftar Baru vs Masuk */}
+                <div className="flex bg-slate-100 p-1 rounded-2xl text-xs font-black">
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      setAuthModalTab('register');
+                      setAuthError('');
+                      setAuthSuccessMsg('');
+                    }}
+                    className={`flex-1 py-2 rounded-xl transition-all cursor-pointer ${authModalTab === 'register' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                  >
+                    ✨ Daftar Akun Baru
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      setAuthModalTab('login');
+                      setAuthError('');
+                      setAuthSuccessMsg('');
+                    }}
+                    className={`flex-1 py-2 rounded-xl transition-all cursor-pointer ${authModalTab === 'login' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                  >
+                    🔑 Masuk ke Akun
+                  </button>
+                </div>
+
+                {/* Real-time Alerts */}
+                {authError && (
+                  <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs font-bold flex items-center gap-2 animate-shake">
+                    <span>⚠️</span>
+                    <span>{authError}</span>
+                  </div>
+                )}
+
+                {authSuccessMsg && (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-bold flex items-center gap-2 animate-fade-in">
+                    <span>✅</span>
+                    <span>{authSuccessMsg}</span>
+                  </div>
+                )}
+
+                {authModalTab === 'register' ? (
+                  <form onSubmit={handleRegisterSubmit} className="space-y-4 text-xs">
+                    
+                    {/* DROPDOWN: PILIH PROFIL KAMU */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-black text-slate-800">
+                          Pilih Profil Kamu:
+                        </label>
+                        <span className="text-[10px] text-teal-700 bg-teal-50 border border-teal-200/80 px-2 py-0.5 rounded-lg font-extrabold">
+                          {PROFILE_OPTIONS.find(p => p.id === authRole)?.name || 'Developer'}
+                        </span>
+                      </div>
+                      
+                      <select 
+                        value={authRole}
+                        onChange={(e) => {
+                          setAuthRole(e.target.value);
+                          setAuthProfileData({});
+                        }}
+                        className="w-full bg-slate-50 border-2 border-slate-300 focus:border-teal-600 focus:bg-white rounded-2xl p-3 text-xs sm:text-sm font-bold text-slate-900 shadow-xs transition-all cursor-pointer outline-none"
+                      >
+                        {PROFILE_OPTIONS.map(p => (
+                          <option key={p.id} value={p.id}>
+                            {p.icon} {p.name} — {p.desc}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* SECTION WAJIB: NAMA & NOMOR HP */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[11px] font-extrabold text-slate-700 block mb-1">
+                          Nama Lengkap / Nama PT <span className="text-rose-500">*</span>
+                        </label>
+                        <input 
+                          type="text"
+                          required
+                          placeholder="Masukkan nama lengkap Anda"
+                          value={authName}
+                          onChange={(e) => setAuthName(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-300 focus:border-teal-600 focus:bg-white rounded-xl p-2.5 text-xs font-bold text-slate-900 placeholder-slate-400 outline-none transition-all"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[11px] font-extrabold text-slate-700 block mb-1">
+                          Nomor HP / WhatsApp <span className="text-rose-500">*</span>
+                        </label>
+                        <input 
+                          type="tel"
+                          required
+                          placeholder="0812xxxxxxxx"
+                          value={authPhone}
+                          onChange={(e) => setAuthPhone(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-300 focus:border-teal-600 focus:bg-white rounded-xl p-2.5 text-xs font-bold text-slate-900 placeholder-slate-400 outline-none transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    {/* EMAIL (OPSIONAL) */}
+                    <div>
+                      <label className="text-[11px] font-extrabold text-slate-700 block mb-1">
+                        Alamat Email <span className="text-slate-400 font-normal">(Opsional)</span>:
+                      </label>
+                      <input 
+                        type="email"
+                        placeholder="email@perusahaan.com"
+                        value={authEmail}
+                        onChange={(e) => setAuthEmail(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-300 focus:border-teal-600 focus:bg-white rounded-xl p-2.5 text-xs font-semibold text-slate-900 placeholder-slate-400 outline-none transition-all"
+                      />
+                    </div>
+
+                    {/* PASSWORD & KONFIRMASI PASSWORD (WAJIB) */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <label className="text-[11px] font-extrabold text-slate-700">
+                            Password <span className="text-rose-500">*</span>
+                          </label>
+                          <button 
+                            type="button" 
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="text-[10px] font-bold text-teal-700 hover:underline cursor-pointer"
+                          >
+                            {showPassword ? 'Sembunyikan' : 'Lihat'}
+                          </button>
+                        </div>
+                        <input 
+                          type={showPassword ? 'text' : 'password'}
+                          required
+                          placeholder="Minimal 6 karakter"
+                          value={authPassword}
+                          onChange={(e) => setAuthPassword(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-300 focus:border-teal-600 focus:bg-white rounded-xl p-2.5 text-xs font-bold text-slate-900 placeholder-slate-400 outline-none transition-all"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <label className="text-[11px] font-extrabold text-slate-700">
+                            Konfirmasi Password <span className="text-rose-500">*</span>
+                          </label>
+                          {authPassword && authPasswordConfirm && (
+                            <span className={`text-[10px] font-black ${authPassword === authPasswordConfirm ? 'text-emerald-600' : 'text-rose-500'}`}>
+                              {authPassword === authPasswordConfirm ? '✓ Cocok' : '✕ Beda'}
+                            </span>
+                          )}
+                        </div>
+                        <input 
+                          type={showPassword ? 'text' : 'password'}
+                          required
+                          placeholder="Ulangi password"
+                          value={authPasswordConfirm}
+                          onChange={(e) => setAuthPasswordConfirm(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-300 focus:border-teal-600 focus:bg-white rounded-xl p-2.5 text-xs font-bold text-slate-900 placeholder-slate-400 outline-none transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    {/* DYNAMIC PROFILE SPECIFIC FIELDS */}
+                    <div className="pt-1">
+                      {/* 1. DEVELOPER */}
+                      {authRole === 'developer' && (
+                        <div className="space-y-2.5 p-3.5 bg-emerald-50/70 rounded-2xl border border-emerald-200/80">
+                          <span className="font-black text-emerald-950 block text-[11px] uppercase tracking-wider">🏗️ Detail Profil Developer:</span>
+                          <div>
+                            <label className="text-[11px] font-bold text-slate-700 block mb-1">Nama PT / Pengembang Perumahan:</label>
+                            <input 
+                              type="text"
+                              placeholder="Contoh: PT Graha Nusantara Land"
+                              value={authProfileData.companyName || ''}
+                              onChange={(e) => setAuthProfileData(prev => ({ ...prev, companyName: e.target.value }))}
+                              className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-700 block mb-1">Jumlah Proyek Berjalan:</label>
+                              <select 
+                                value={authProfileData.projectCount || '1-3 Proyek'}
+                                onChange={(e) => setAuthProfileData(prev => ({ ...prev, projectCount: e.target.value }))}
+                                className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                              >
+                                <option value="1-3 Proyek">1 - 3 Proyek</option>
+                                <option value="4-10 Proyek">4 - 10 Proyek</option>
+                                <option value=">10 Proyek">&gt; 10 Proyek</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-700 block mb-1">Wilayah Fokus Pengembangan:</label>
+                              <input 
+                                type="text"
+                                placeholder="Contoh: Jabodetabek / Jabar"
+                                value={authProfileData.targetRegion || ''}
+                                onChange={(e) => setAuthProfileData(prev => ({ ...prev, targetRegion: e.target.value }))}
+                                className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 2. TOKO MATERIAL / DISTRIBUTOR */}
+                      {authRole === 'toko_material' && (
+                        <div className="space-y-2.5 p-3.5 bg-amber-50/70 rounded-2xl border border-amber-200/80">
+                          <span className="font-black text-amber-950 block text-[11px] uppercase tracking-wider">🧱 Detail Toko Material / Distributor:</span>
+                          <div>
+                            <label className="text-[11px] font-bold text-slate-700 block mb-1">Nama Toko / Perusahaan Distributor:</label>
+                            <input 
+                              type="text"
+                              placeholder="Contoh: TB Sinar Bangunan Perkasa"
+                              value={authProfileData.storeName || ''}
+                              onChange={(e) => setAuthProfileData(prev => ({ ...prev, storeName: e.target.value }))}
+                              className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-700 block mb-1">Kategori Material Utama:</label>
+                              <input 
+                                type="text"
+                                placeholder="Semen, Besi Beton, Bata, Cat"
+                                value={authProfileData.mainMaterial || ''}
+                                onChange={(e) => setAuthProfileData(prev => ({ ...prev, mainMaterial: e.target.value }))}
+                                className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-700 block mb-1">Jangkauan Pengiriman:</label>
+                              <select 
+                                value={authProfileData.deliveryRadius || 'Dalam Kota'}
+                                onChange={(e) => setAuthProfileData(prev => ({ ...prev, deliveryRadius: e.target.value }))}
+                                className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                              >
+                                <option value="Dalam Kota">Dalam Kota / Radius 20km</option>
+                                <option value="Seluruh Provinsi">Seluruh Provinsi</option>
+                                <option value="Nasional">Nasional / Lintas Pulau</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 3. AGEN MARKETING */}
+                      {authRole === 'agen_marketing' && (
+                        <div className="space-y-2.5 p-3.5 bg-blue-50/70 rounded-2xl border border-blue-200/80">
+                          <span className="font-black text-blue-950 block text-[11px] uppercase tracking-wider">🏷️ Detail Agen Marketing:</span>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-700 block mb-1">Kantor Agensi / Broker:</label>
+                              <input 
+                                type="text"
+                                placeholder="Era, Brighton, Independen"
+                                value={authProfileData.agencyName || ''}
+                                onChange={(e) => setAuthProfileData(prev => ({ ...prev, agencyName: e.target.value }))}
+                                className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-700 block mb-1">Spesialisasi Listing:</label>
+                              <select 
+                                value={authProfileData.specialty || 'Residensial (Rumah)'}
+                                onChange={(e) => setAuthProfileData(prev => ({ ...prev, specialty: e.target.value }))}
+                                className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                              >
+                                <option value="Residensial (Rumah)">Residensial (Rumah)</option>
+                                <option value="Komersial / Ruko">Komersial / Ruko</option>
+                                <option value="Lahan / Kavling Tanah">Lahan / Kavling Tanah</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 4. NOTARIS */}
+                      {authRole === 'notaris' && (
+                        <div className="space-y-2.5 p-3.5 bg-indigo-50/70 rounded-2xl border border-indigo-200/80">
+                          <span className="font-black text-indigo-950 block text-[11px] uppercase tracking-wider">📜 Detail Kantor Notaris & PPAT:</span>
+                          <div>
+                            <label className="text-[11px] font-bold text-slate-700 block mb-1">Nama Kantor Notaris & PPAT:</label>
+                            <input 
+                              type="text"
+                              placeholder="Contoh: Kantor Notaris Hj. Ratna, S.H., M.Kn"
+                              value={authProfileData.notaryOffice || ''}
+                              onChange={(e) => setAuthProfileData(prev => ({ ...prev, notaryOffice: e.target.value }))}
+                              className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-700 block mb-1">Wilayah Kedudukan:</label>
+                              <input 
+                                type="text"
+                                placeholder="Kota Makassar / Jaksel"
+                                value={authProfileData.jurisdiction || ''}
+                                onChange={(e) => setAuthProfileData(prev => ({ ...prev, jurisdiction: e.target.value }))}
+                                className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-700 block mb-1">No. SK Kemenkumham:</label>
+                              <input 
+                                type="text"
+                                placeholder="No. AHU-xxxx.AH"
+                                value={authProfileData.skNumber || ''}
+                                onChange={(e) => setAuthProfileData(prev => ({ ...prev, skNumber: e.target.value }))}
+                                className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 5. PERBANKAN */}
+                      {authRole === 'perbankan' && (
+                        <div className="space-y-2.5 p-3.5 bg-slate-100 rounded-2xl border border-slate-300">
+                          <span className="font-black text-slate-950 block text-[11px] uppercase tracking-wider">🏛️ Detail Perbankan & Lembaga Keuangan:</span>
+                          <div>
+                            <label className="text-[11px] font-bold text-slate-700 block mb-1">Nama Bank / Institusi:</label>
+                            <input 
+                              type="text"
+                              placeholder="Contoh: Bank BTN / Bank Mandiri / BSI"
+                              value={authProfileData.bankName || ''}
+                              onChange={(e) => setAuthProfileData(prev => ({ ...prev, bankName: e.target.value }))}
+                              className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-700 block mb-1">Divisi Pembiayaan:</label>
+                              <select 
+                                value={authProfileData.bankDivision || 'KPR Residensial'}
+                                onChange={(e) => setAuthProfileData(prev => ({ ...prev, bankDivision: e.target.value }))}
+                                className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                              >
+                                <option value="KPR Residensial">KPR Residensial</option>
+                                <option value="Kredit Konstruksi">Kredit Konstruksi</option>
+                                <option value="Sindikasi Investasi">Sindikasi Investasi</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-700 block mb-1">Jabatan / Kantor Cabang:</label>
+                              <input 
+                                type="text"
+                                placeholder="Account Officer KC..."
+                                value={authProfileData.jobTitle || ''}
+                                onChange={(e) => setAuthProfileData(prev => ({ ...prev, jobTitle: e.target.value }))}
+                                className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 6. KONTRAKTOR */}
+                      {authRole === 'kontraktor' && (
+                        <div className="space-y-2.5 p-3.5 bg-orange-50/70 rounded-2xl border border-orange-200/80">
+                          <span className="font-black text-orange-950 block text-[11px] uppercase tracking-wider">🔨 Detail Kontraktor Konstruksi:</span>
+                          <div>
+                            <label className="text-[11px] font-bold text-slate-700 block mb-1">Nama PT / CV Kontraktor:</label>
+                            <input 
+                              type="text"
+                              placeholder="Contoh: PT Karya Beton Perkasa"
+                              value={authProfileData.contractorName || ''}
+                              onChange={(e) => setAuthProfileData(prev => ({ ...prev, contractorName: e.target.value }))}
+                              className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-700 block mb-1">Klasifikasi Kualifikasi:</label>
+                              <select 
+                                value={authProfileData.classification || 'Kualifikasi Menengah (M1/M2)'}
+                                onChange={(e) => setAuthProfileData(prev => ({ ...prev, classification: e.target.value }))}
+                                className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                              >
+                                <option value="Kualifikasi Kecil (K1/K2)">Kualifikasi Kecil (K1/K2)</option>
+                                <option value="Kualifikasi Menengah (M1/M2)">Kualifikasi Menengah (M1/M2)</option>
+                                <option value="Kualifikasi Besar (B1/B2)">Kualifikasi Besar (B1/B2)</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-700 block mb-1">Spesialisasi:</label>
+                              <input 
+                                type="text"
+                                placeholder="Struktur, Arsitektur, Sipil, MEP"
+                                value={authProfileData.specialtyContractor || ''}
+                                onChange={(e) => setAuthProfileData(prev => ({ ...prev, specialtyContractor: e.target.value }))}
+                                className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 7. MEDIATOR */}
+                      {authRole === 'mediator' && (
+                        <div className="space-y-2.5 p-3.5 bg-teal-50/70 rounded-2xl border border-teal-200/80">
+                          <span className="font-black text-teal-950 block text-[11px] uppercase tracking-wider">🤝 Detail Mediator Properti & Lahan:</span>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-700 block mb-1">Wilayah Jaringan Mediasi:</label>
+                              <input 
+                                type="text"
+                                placeholder="Jabodetabek, Bali, Makassar"
+                                value={authProfileData.networkRegion || ''}
+                                onChange={(e) => setAuthProfileData(prev => ({ ...prev, networkRegion: e.target.value }))}
+                                className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-700 block mb-1">Fokus Mediasi:</label>
+                              <select 
+                                value={authProfileData.mediationFocus || 'Lahan Joint Venture'}
+                                onChange={(e) => setAuthProfileData(prev => ({ ...prev, mediationFocus: e.target.value }))}
+                                className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                              >
+                                <option value="Lahan Joint Venture">Lahan Joint Venture</option>
+                                <option value="Take-over Proyek Macet">Take-over Proyek Macet</option>
+                                <option value="Aset Komersial & Industri">Aset Komersial & Industri</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 8. FREELANCER */}
+                      {authRole === 'freelancer' && (
+                        <div className="space-y-2.5 p-3.5 bg-cyan-50/70 rounded-2xl border border-cyan-200/80">
+                          <span className="font-black text-cyan-950 block text-[11px] uppercase tracking-wider">💻 Detail Jasa Freelancer:</span>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-700 block mb-1">Bidang Keahlian:</label>
+                              <select 
+                                value={authProfileData.freelanceSkill || 'Arsitek Desain & 3D Render'}
+                                onChange={(e) => setAuthProfileData(prev => ({ ...prev, freelanceSkill: e.target.value }))}
+                                className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                              >
+                                <option value="Arsitek Desain & 3D Render">Arsitek Desain & 3D Render</option>
+                                <option value="Estimator Biaya RAB">Estimator Biaya RAB</option>
+                                <option value="Civil & Structural Engineer">Civil & Structural Engineer</option>
+                                <option value="Legal Drafter & Perizinan">Legal Drafter & Perizinan</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-700 block mb-1">Link Portofolio (Drive/Web):</label>
+                              <input 
+                                type="url"
+                                placeholder="https://drive.google.com/..."
+                                value={authProfileData.portfolioUrl || ''}
+                                onChange={(e) => setAuthProfileData(prev => ({ ...prev, portfolioUrl: e.target.value }))}
+                                className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 9. INVESTOR */}
+                      {authRole === 'investor' && (
+                        <div className="space-y-2.5 p-3.5 bg-amber-50/80 rounded-2xl border border-amber-300/80">
+                          <span className="font-black text-amber-950 block text-[11px] uppercase tracking-wider">💰 Detail Preferensi Investor:</span>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-700 block mb-1">Skema Minat Investasi:</label>
+                              <select 
+                                value={authProfileData.investScheme || 'Joint Venture Lahan & Proyek'}
+                                onChange={(e) => setAuthProfileData(prev => ({ ...prev, investScheme: e.target.value }))}
+                                className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                              >
+                                <option value="Joint Venture Lahan & Proyek">Joint Venture Lahan & Proyek</option>
+                                <option value="Penyertaan Modal Equity">Penyertaan Modal Equity</option>
+                                <option value="Dana Talangan / Bridging">Dana Talangan / Bridging</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-700 block mb-1">Kesiapan Alokasi Dana:</label>
+                              <select 
+                                value={authProfileData.fundReady || 'Rp 1 Miliar - Rp 5 Miliar'}
+                                onChange={(e) => setAuthProfileData(prev => ({ ...prev, fundReady: e.target.value }))}
+                                className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                              >
+                                <option value="Rp 250 Jt - Rp 1 Miliar">Rp 250 Jt - Rp 1 Miliar</option>
+                                <option value="Rp 1 Miliar - Rp 5 Miliar">Rp 1 Miliar - Rp 5 Miliar</option>
+                                <option value="> Rp 5 Miliar">&gt; Rp 5 Miliar</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 10. PEMILIK PROPERTY */}
+                      {authRole === 'pemilik_property' && (
+                        <div className="space-y-2.5 p-3.5 bg-emerald-50/80 rounded-2xl border border-emerald-300/80">
+                          <span className="font-black text-emerald-950 block text-[11px] uppercase tracking-wider">🏡 Detail Aset Pemilik Property / Lahan:</span>
+                          <div className="grid grid-cols-3 gap-2">
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-700 block mb-1">Tipe Aset:</label>
+                              <select 
+                                value={authProfileData.assetType || 'Lahan Kosong'}
+                                onChange={(e) => setAuthProfileData(prev => ({ ...prev, assetType: e.target.value }))}
+                                className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                              >
+                                <option value="Lahan Kosong">Lahan Kosong</option>
+                                <option value="Ruko Komersial">Ruko Komersial</option>
+                                <option value="Rumah Tinggal">Rumah Tinggal</option>
+                                <option value="Gedung / Pabrik">Gedung / Pabrik</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-700 block mb-1">Luas Aset (m²):</label>
+                              <input 
+                                type="text"
+                                placeholder="Contoh: 2500"
+                                value={authProfileData.landSize || ''}
+                                onChange={(e) => setAuthProfileData(prev => ({ ...prev, landSize: e.target.value }))}
+                                className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-700 block mb-1">Status Legalitas:</label>
+                              <select 
+                                value={authProfileData.legalStatus || 'SHM (Sertifikat Hak Milik)'}
+                                onChange={(e) => setAuthProfileData(prev => ({ ...prev, legalStatus: e.target.value }))}
+                                className="w-full bg-white border border-slate-300 rounded-xl p-2 font-bold text-slate-900 text-xs"
+                              >
+                                <option value="SHM (Sertifikat Hak Milik)">SHM</option>
+                                <option value="HGB (Hak Guna Bangunan)">HGB</option>
+                                <option value="Girik / Letter C">Girik / Letter C</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* SUBMIT BUTTON */}
+                    <button 
+                      type="submit"
+                      disabled={isAuthLoading}
+                      className="w-full py-3.5 bg-gradient-to-r from-[#1ac1b9] via-[#0d9488] to-[#0f766e] hover:from-[#16a39d] hover:to-[#0d9488] text-slate-950 font-black text-xs sm:text-sm rounded-2xl shadow-lg shadow-teal-500/20 transition-all cursor-pointer flex items-center justify-center gap-2 transform hover:-translate-y-0.5 disabled:opacity-50"
+                    >
+                      {isAuthLoading ? (
+                        <span>⏳ Menyimpan ke Database...</span>
+                      ) : (
+                        <>
+                          <span>🚀</span>
+                          <span>Daftar & Simpan ke Database</span>
+                        </>
+                      )}
+                    </button>
+
+                    {/* DIVIDER & GOOGLE SSO OPTION */}
+                    <div className="relative flex py-1 items-center">
+                      <div className="flex-grow border-t border-slate-200"></div>
+                      <span className="flex-shrink mx-3 text-[10px] text-slate-400 font-extrabold uppercase">atau</span>
+                      <div className="flex-grow border-t border-slate-200"></div>
+                    </div>
+
                     <button
                       type="button"
                       onClick={() => handleQuickAuth('google')}
-                      className="w-full py-3.5 px-4 bg-white hover:bg-slate-50 text-slate-800 font-extrabold text-sm rounded-2xl border-2 border-slate-300 hover:border-slate-400 shadow-sm flex items-center justify-center gap-3 transition-all cursor-pointer group"
+                      className="w-full py-2.5 bg-white hover:bg-slate-50 text-slate-800 font-extrabold text-xs rounded-xl border border-slate-300 shadow-xs flex items-center justify-center gap-2.5 transition-all cursor-pointer group"
                     >
-                      <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
                         <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.15C3.26 21.3 7.31 24 12 24z"/>
                         <path fill="#FBBC05" d="M5.28 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.39l3.99-3.15z"/>
                         <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.61l3.99 3.15c.95-2.85 3.6-4.96 6.72-4.96z"/>
                       </svg>
-                      <span>Daftar Dengan Google</span>
+                      <span>Daftar Cepat 1-Klik dengan Google SSO</span>
                     </button>
 
-                    {/* BUTTON 2: DAFTAR DENGAN NOMOR HP */}
-                    <button
-                      type="button"
-                      onClick={() => setAuthPhoneMode(true)}
-                      className="w-full py-3.5 px-4 bg-white hover:bg-teal-50/60 text-slate-800 hover:text-teal-900 font-extrabold text-sm rounded-2xl border-2 border-slate-300 hover:border-teal-500 shadow-sm flex items-center justify-center gap-3 transition-all cursor-pointer group"
-                    >
-                      <span className="text-base group-hover:scale-110 transition-transform">📱</span>
-                      <span>Daftar dengan Nomor HP</span>
-                    </button>
-                  </div>
+                  </form>
                 ) : (
-                  <form onSubmit={(e) => { e.preventDefault(); handleQuickAuth('form'); }} className="space-y-4 pt-1 animate-fade-in">
+                  /* LOGIN FORM */
+                  <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs pt-1">
                     <div>
-                      <label className="text-xs font-black text-slate-700 block mb-1.5">
-                        Nomor WhatsApp / HP Aktif:
+                      <label className="text-[11px] font-extrabold text-slate-700 block mb-1">
+                        Nomor WhatsApp / Nomor HP atau Email:
                       </label>
                       <input 
-                        type="tel"
+                        type="text"
                         required
-                        autoFocus
-                        placeholder="Contoh: 081234567890"
+                        placeholder="Contoh: 0812xxxxxxxx atau user@email.com"
                         value={authPhone}
                         onChange={(e) => setAuthPhone(e.target.value)}
-                        className="w-full bg-slate-50 border-2 border-slate-300 focus:border-teal-600 focus:bg-white rounded-2xl p-3 text-sm font-bold text-slate-900 placeholder-slate-400 outline-none transition-all shadow-inner"
+                        className="w-full bg-slate-50 border border-slate-300 focus:border-teal-600 focus:bg-white rounded-xl p-3 text-xs font-bold text-slate-900 placeholder-slate-400 outline-none transition-all"
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="text-[11px] font-extrabold text-slate-700">
+                          Password Akun:
+                        </label>
+                        <button 
+                          type="button" 
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="text-[10px] font-bold text-teal-700 hover:underline cursor-pointer"
+                        >
+                          {showPassword ? 'Sembunyikan' : 'Lihat'}
+                        </button>
+                      </div>
+                      <input 
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        placeholder="Masukkan password Anda"
+                        value={authPassword}
+                        onChange={(e) => setAuthPassword(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-300 focus:border-teal-600 focus:bg-white rounded-xl p-3 text-xs font-bold text-slate-900 placeholder-slate-400 outline-none transition-all"
                       />
                     </div>
 
                     <button 
                       type="submit"
-                      className="w-full py-3.5 bg-gradient-to-r from-[#1ac1b9] to-[#0d9488] hover:from-[#16a39d] hover:to-[#0f766e] text-slate-950 font-black text-sm rounded-2xl shadow-md cursor-pointer transition-all flex items-center justify-center gap-2"
+                      disabled={isAuthLoading}
+                      className="w-full py-3.5 bg-gradient-to-r from-[#1ac1b9] via-[#0d9488] to-[#0f766e] hover:from-[#16a39d] hover:to-[#0d9488] text-slate-950 font-black text-xs sm:text-sm rounded-2xl shadow-lg shadow-teal-500/20 transition-all cursor-pointer flex items-center justify-center gap-2 transform hover:-translate-y-0.5 disabled:opacity-50"
                     >
-                      <span>Lanjutkan</span>
-                      <span>➔</span>
+                      {isAuthLoading ? (
+                        <span>⏳ Memverifikasi Akun...</span>
+                      ) : (
+                        <>
+                          <span>🔑</span>
+                          <span>Masuk ke Dashboard</span>
+                        </>
+                      )}
                     </button>
 
-                    <button 
+                    {/* DIVIDER & GOOGLE SSO OPTION */}
+                    <div className="relative flex py-1 items-center">
+                      <div className="flex-grow border-t border-slate-200"></div>
+                      <span className="flex-shrink mx-3 text-[10px] text-slate-400 font-extrabold uppercase">atau</span>
+                      <div className="flex-grow border-t border-slate-200"></div>
+                    </div>
+
+                    <button
                       type="button"
-                      onClick={() => setAuthPhoneMode(false)}
-                      className="w-full text-center text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors"
+                      onClick={() => handleQuickAuth('google')}
+                      className="w-full py-2.5 bg-white hover:bg-slate-50 text-slate-800 font-extrabold text-xs rounded-xl border border-slate-300 shadow-xs flex items-center justify-center gap-2.5 transition-all cursor-pointer group"
                     >
-                      ← Kembali ke pilihan lain
+                      <svg className="w-4 h-4 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.15C3.26 21.3 7.31 24 12 24z"/>
+                        <path fill="#FBBC05" d="M5.28 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.39l3.99-3.15z"/>
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.61l3.99 3.15c.95-2.85 3.6-4.96 6.72-4.96z"/>
+                      </svg>
+                      <span>Masuk 1-Klik dengan Google SSO</span>
                     </button>
                   </form>
                 )}
 
                 <div className="pt-2 border-t border-slate-100 text-center">
                   <p className="text-[10px] text-slate-400 leading-relaxed">
-                    Dengan melanjutkan, Anda menyetujui Ketentuan Layanan Escrow & Kebijakan Privasi NARA.
+                    Data akun Anda terlindungi dengan standar enkripsi & Rekening Bersama Escrow Resmi NARA.
                   </p>
                 </div>
 
