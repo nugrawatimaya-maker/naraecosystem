@@ -582,132 +582,91 @@
       return (
         <div className="min-h-screen flex flex-col justify-between bg-[#f8fafc] text-slate-900 relative selection:bg-[#1ac1b9] selection:text-slate-950">
           
-          {/* HEADER & NAV */}
-          <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-2xl border-b border-slate-200/90 shadow-xs transition-all">
-            
-            {/* TOP BAR 1: TOKOPEDIA / FINTECH STYLE */}
-            <div className="bg-slate-900 text-slate-300 py-1.5 px-4 text-xs font-medium border-b border-slate-800">
-              <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-end gap-5 text-xs">
-                  <a 
-                    href="./tentang.html"
-                    className="hover:text-amber-300 transition-colors cursor-pointer"
-                  >
-                    Tentang NARA
-                  </a>
-
-                  <button 
-                    onClick={() => setIsListingModalOpen(true)}
-                    className="hover:text-teal-300 transition-colors cursor-pointer text-amber-300 font-bold"
-                  >
-                    + Pasang Listing
-                  </button>
-
-                  <button 
-                    onClick={() => setIsCareModalOpen(true)}
-                    className="hover:text-teal-300 transition-colors cursor-pointer flex items-center gap-1"
-                  >
-                    <span>🎧</span>
-                    <span>Nara Care 24/7</span>
-                  </button>
-
-                  <a 
-                    href="./admin.html"
-                    className="text-slate-400 hover:text-white transition-colors flex items-center gap-1 font-semibold"
-                  >
-                    <span>⚙️</span>
-                    <span>Admin CMS</span>
-                  </a>
-                </div>
-              </div>
-
-            {/* MAIN HEADER BAR */}
-            <div className="py-3 px-4">
-              <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3.5">
-                
-                {/* Left: Official Logo */}
-                <div className="flex items-center gap-3 cursor-pointer shrink-0" onClick={() => setActiveTab('flow')}>
+          {/* HEADER & NAV: CYAN VIBRANT BANNER WITH FLOATING CIRCULAR LOGO */}
+          <header className="sticky top-0 z-40 bg-gradient-to-r from-[#22d3ee] via-[#38bdf8] to-[#67e8f9] border-b border-cyan-400/60 shadow-lg px-4 sm:px-8 py-3.5 transition-all">
+            <div className="max-w-7xl mx-auto flex items-center justify-between relative">
+              
+              {/* Left: Floating Circular Logo Badge */}
+              <div 
+                onClick={() => setActiveTab('flow')}
+                className="flex items-center cursor-pointer group z-30"
+              >
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#a5f3fc] border-2 border-slate-700/60 shadow-xl flex items-center justify-center p-2 transform group-hover:scale-105 transition-all duration-300 -mb-6 sm:-mb-8 relative overflow-hidden ring-4 ring-cyan-200/50">
                   <img 
                     src="./nara-logo.png" 
-                    alt="NaraEcosystem® Logo" 
-                    className="h-10 sm:h-11 w-auto object-contain"
+                    alt="NARA Logo" 
+                    className="w-full h-full object-contain"
                   />
-                  <div className="hidden lg:block border-l border-slate-300 pl-3">
-                    <span className="text-[10px] font-black text-teal-700 tracking-wider uppercase block">NARA HUB ECOSYSTEM</span>
-                    <span className="text-[9px] text-slate-500 font-semibold">Proptech & Escrow Marketplace</span>
+                </div>
+              </div>
+
+              {/* Right: Navigation Buttons (BERANDA, LOGIN, DAFTAR) */}
+              <div className="flex items-center gap-2.5 sm:gap-3.5 text-xs sm:text-sm font-black">
+                
+                {/* Button: BERANDA */}
+                <button 
+                  onClick={() => setActiveTab('flow')}
+                  className="px-4 sm:px-6 py-2.5 bg-[#38bdf8] hover:bg-[#0284c7] hover:text-white text-slate-900 font-black rounded-xl border border-cyan-400/80 shadow-md shadow-cyan-600/20 transition-all cursor-pointer uppercase tracking-wider transform hover:-translate-y-0.5 active:translate-y-0"
+                >
+                  BERANDA
+                </button>
+
+                {/* Button: TENTANG NARA */}
+                <a 
+                  href="./tentang.html"
+                  className="hidden md:inline-block px-4 py-2.5 bg-[#38bdf8]/80 hover:bg-[#0284c7] hover:text-white text-slate-900 font-black rounded-xl border border-cyan-400/80 shadow-md shadow-cyan-600/20 transition-all uppercase tracking-wider transform hover:-translate-y-0.5"
+                >
+                  TENTANG NARA
+                </a>
+
+                {currentUser ? (
+                  <div className="flex items-center gap-2 bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-cyan-400 shadow-sm">
+                    <span className="text-xs font-black text-slate-900">{currentUser.name}</span>
+                    <button 
+                      onClick={handleLogout}
+                      className="text-xs text-rose-600 hover:text-rose-800 font-bold ml-1"
+                    >
+                      Keluar
+                    </button>
                   </div>
-                </div>
+                ) : (
+                  <>
+                    {/* Button: LOGIN */}
+                    <button 
+                      onClick={() => {
+                        setAuthModalTab('login');
+                        setIsAuthModalOpen(true);
+                      }}
+                      className="px-4 sm:px-6 py-2.5 bg-[#38bdf8] hover:bg-[#0284c7] hover:text-white text-slate-900 font-black rounded-xl border border-cyan-400/80 shadow-md shadow-cyan-600/20 transition-all cursor-pointer uppercase tracking-wider transform hover:-translate-y-0.5 active:translate-y-0"
+                    >
+                      LOGIN
+                    </button>
 
-                {/* Center: Kolom Pencarian Utama */}
-                <div className="relative flex-1 max-w-2xl w-full">
-                  <input 
-                    type="text"
-                    placeholder="Cari lahan, proyek JV, kontraktor, toko material, atau notaris..."
-                    value={globalSearchQuery}
-                    onChange={(e) => {
-                      setGlobalSearchQuery(e.target.value);
-                      if (e.target.value.length > 0) setActiveTab('marketplace');
-                    }}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-4 pr-16 py-2.5 text-xs font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1ac1b9] focus:bg-white transition-all shadow-inner"
-                  />
-                  <button 
-                    onClick={() => setActiveTab('marketplace')}
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-[#1ac1b9] hover:bg-[#16a39d] text-slate-950 font-extrabold px-3.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer shadow-sm"
-                  >
-                    Cari
-                  </button>
-                </div>
+                    {/* Button: DAFTAR */}
+                    <button 
+                      onClick={() => {
+                        setAuthModalTab('register');
+                        setIsAuthModalOpen(true);
+                      }}
+                      className="px-4 sm:px-6 py-2.5 bg-[#38bdf8] hover:bg-[#0284c7] hover:text-white text-slate-900 font-black rounded-xl border border-cyan-400/80 shadow-md shadow-cyan-600/20 transition-all cursor-pointer uppercase tracking-wider transform hover:-translate-y-0.5 active:translate-y-0"
+                    >
+                      DAFTAR
+                    </button>
+                  </>
+                )}
 
-                {/* Right: Auth Profile / Instant Onboarding */}
-                <div className="flex items-center gap-2.5 shrink-0">
-                  {currentUser ? (
-                    <div className="flex items-center gap-2 bg-slate-100 border border-slate-300 rounded-xl p-1.5 pr-3 shadow-xs">
-                      <div className="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center font-black text-xs shadow-xs">
-                        {currentUser.roleIcon || '👤'}
-                      </div>
-                      <div className="text-left">
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs font-extrabold text-slate-900 line-clamp-1">{currentUser.name}</span>
-                          <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                        </div>
-                        <span className="text-[10px] text-teal-700 font-bold block">{currentUser.roleName}</span>
-                      </div>
-                      <button 
-                        onClick={handleLogout}
-                        className="ml-2 text-slate-400 hover:text-rose-600 text-xs font-bold p-1"
-                        title="Keluar"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <button 
-                        onClick={() => {
-                          setAuthModalTab('login');
-                          setIsAuthModalOpen(true);
-                        }}
-                        className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-800 font-extrabold text-xs rounded-xl border border-slate-300 shadow-xs transition-all cursor-pointer"
-                      >
-                        Masuk
-                      </button>
-
-                      <button 
-                        onClick={() => {
-                          setAuthModalTab('register');
-                          setIsAuthModalOpen(true);
-                        }}
-                        className="px-5 py-2 bg-gradient-to-r from-[#1ac1b9] to-[#0d9488] hover:from-[#16a39d] hover:to-[#0f766e] text-slate-950 font-black text-xs rounded-xl shadow-md shadow-teal-500/20 transition-all cursor-pointer flex items-center gap-1.5"
-                      >
-                        <span>✨ Daftar Cepat</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
+                {/* Quick Link to Admin */}
+                <a 
+                  href="./admin.html"
+                  className="p-2.5 bg-cyan-900/20 hover:bg-cyan-900/40 text-slate-900 hover:text-white rounded-xl border border-cyan-400/60 transition-all"
+                  title="Admin CMS"
+                >
+                  ⚙️
+                </a>
 
               </div>
+
             </div>
-
-
           </header>
 
           {/* MAIN BODY CONTENT */}
