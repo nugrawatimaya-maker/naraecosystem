@@ -669,134 +669,255 @@
             </div>
           </header>
 
-          {/* MAIN BODY CONTENT */}
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8 flex-1 w-full">
-            
-            {/* TAB 1: FLOW VISUALIZER & LUXURY HERO */}
-            {activeTab === 'flow' && (
-              <div className="space-y-8">
+          {/* MAIN BODY CONTENT: TWO-COLUMN LAYOUT WITH SLEEK LEFT SIDEBAR */}
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+            <div className="flex flex-col lg:flex-row gap-6 items-start">
+              
+              {/* === LEFT SIDEBAR NAVIGATION === */}
+              <aside className="w-full lg:w-72 shrink-0 space-y-4 sticky top-20 z-20">
                 
-                {/* MODERN LUXURY HERO SECTION */}
-                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#064e3b] via-[#047857] to-[#022c22] border border-emerald-500/30 p-6 sm:p-8 lg:p-10 shadow-2xl text-white">
-                  
-                  {/* Ambient Light Orbs for Depth Glow */}
-                  <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#1ac1b9]/25 rounded-full blur-3xl pointer-events-none animate-pulse-glow"></div>
-                  <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
-
-                  <div className="relative z-10 space-y-6">
-                    
-                    {/* DYNAMIC CMS HEADLINE NEWS & PRESS RELEASE BAR */}
-                    <div className="bg-emerald-950/80 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl border border-teal-400/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
-                      <div className="flex items-start sm:items-center gap-3">
-                        <span className="bg-amber-400 text-slate-950 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0 flex items-center gap-1.5 shadow-sm">
-                          <span className="w-1.5 h-1.5 rounded-full bg-slate-950 animate-ping"></span>
-                          <span>{heroConfig.headlineCategory || '📢 BERITA TERBARU'}</span>
-                        </span>
-                        <div>
-                          <h4 className="text-xs sm:text-sm font-black text-white line-clamp-1">
-                            {heroConfig.headingPre} <span className="text-amber-300">{heroConfig.headingHighlight}</span>
-                          </h4>
-                          <p className="text-[11px] text-emerald-200/80 line-clamp-1 hidden md:block">
-                            {heroConfig.description}
-                          </p>
-                        </div>
-                      </div>
-
-                      <a 
-                        href="./berita.html"
-                        className="shrink-0 px-4 py-2 bg-[#1ac1b9] hover:bg-[#16a39d] text-slate-950 font-black text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 transform hover:scale-105"
+                {/* Search Box in Sidebar */}
+                <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs space-y-2">
+                  <span className="text-[11px] font-black text-slate-800 uppercase tracking-wider block flex items-center gap-1.5">
+                    <span>🔍</span>
+                    <span>Cari di Ekosistem</span>
+                  </span>
+                  <div className="relative">
+                    <input 
+                      type="text"
+                      placeholder="Cari proyek, notaris, dll..."
+                      value={globalSearchQuery}
+                      onChange={(e) => {
+                        setGlobalSearchQuery(e.target.value);
+                        if (e.target.value.length > 0) setActiveTab('marketplace');
+                      }}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3.5 pr-8 py-2 text-xs font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1ac1b9] focus:bg-white transition-all"
+                    />
+                    {globalSearchQuery && (
+                      <button 
+                        onClick={() => setGlobalSearchQuery('')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
                       >
-                        <span>📖 Baca Berita Lengkap</span>
-                        <span>➔</span>
-                      </a>
-                    </div>
-
-
-                    {/* Main Headline & Visual Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                      
-                      {/* Left: Dynamic Content by Persona */}
-                      <div className="lg:col-span-7 space-y-4">
-                        
-                        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-400/20 border border-amber-300/40 text-amber-300 text-xs font-black tracking-wide">
-                          <span>✨</span>
-                          <span>{currentPersona.tag}</span>
-                        </div>
-
-                        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight text-white">
-                          {currentPersona.title} <span className="text-amber-300 block">{currentPersona.highlight}</span>
-                        </h1>
-
-                        <p className="text-sm sm:text-base text-emerald-100 leading-relaxed font-medium max-w-xl">
-                          {currentPersona.desc}
-                        </p>
-
-
-                        {/* Action Buttons */}
-                        <div className="pt-2 flex flex-wrap gap-3">
-                          <button 
-                            onClick={currentPersona.action}
-                            className="px-6 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm shadow-xl shadow-amber-500/25 transition-all cursor-pointer flex items-center gap-2 transform hover:-translate-y-0.5"
-                          >
-                            <span>🚀</span>
-                            <span>{currentPersona.ctaText}</span>
-                          </button>
-
-                          <button 
-                            onClick={() => {
-                              setAuthModalTab('register');
-                              setIsAuthModalOpen(true);
-                            }}
-                            className="px-5 py-3 rounded-2xl bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-400/40 text-white font-extrabold text-xs sm:text-sm transition-all cursor-pointer flex items-center gap-2"
-                          >
-                            <span>⚡ Daftar Gratis (30 Detik)</span>
-                          </button>
-                        </div>
-
-                      </div>
-
-                      {/* Right: Modern Luxury Glass Showcase Card */}
-                      <div className="lg:col-span-5 relative flex justify-center">
-                        <div className="w-full max-w-md glass-luxury-dark rounded-3xl p-5 border border-white/20 shadow-2xl space-y-4 relative overflow-hidden">
-                          
-                          <div className="flex justify-between items-center border-b border-white/10 pb-3">
-                            <span className="text-[11px] font-black text-teal-300 uppercase tracking-wider">⚡ Live Deal Highlights</span>
-                            <span className="bg-emerald-500/30 text-emerald-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-emerald-400/30 flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                              Verified NARA
-                            </span>
-                          </div>
-
-                          <div className="relative rounded-2xl overflow-hidden border border-white/20 h-44 group">
-                            <img 
-                              src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80" 
-                              alt="NARA Deal Closing Handshake" 
-                              className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent flex flex-col justify-end p-3.5">
-                              <span className="text-xs font-black text-amber-300">Cluster Premium BSD - Phase 2</span>
-                              <span className="text-[11px] text-slate-200">Joint Venture ROI 16.5% p.a. • Notaris Penjamin Ready</span>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-2 text-xs">
-                            <div className="bg-white/10 backdrop-blur-sm p-2.5 rounded-xl border border-white/10">
-                              <span className="text-[10px] text-slate-300 block">Nilai Proyek</span>
-                              <strong className="text-white font-extrabold">Rp 12,5 Miliar</strong>
-                            </div>
-                            <div className="bg-white/10 backdrop-blur-sm p-2.5 rounded-xl border border-white/10">
-                              <span className="text-[10px] text-slate-300 block">Proteksi Dana</span>
-                              <strong className="text-amber-300 font-extrabold">100% Escrow Active</strong>
-                            </div>
-                          </div>
-
-                        </div>
-                      </div>
-
-                    </div>
-
+                        ✕
+                      </button>
+                    )}
                   </div>
                 </div>
+
+                {/* Sidebar Menu 1: Kategori & Peran */}
+                <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black text-teal-800 uppercase tracking-wider">Peran & Kategori</span>
+                    <span className="text-[10px] bg-teal-50 text-teal-700 px-1.5 py-0.5 rounded-md font-bold">12 Aktor</span>
+                  </div>
+                  
+                  <div className="space-y-1 text-xs font-extrabold">
+                    {[
+                      { id: 'investor', name: '💎 Investor Proyek', tab: 'marketplace', cat: 'projects' },
+                      { id: 'landowner', name: '📍 Pemilik Lahan', tab: 'marketplace', cat: 'landowner' },
+                      { id: 'contractors', name: '🔨 Kontraktor Utama', tab: 'marketplace', cat: 'contractors' },
+                      { id: 'materials', name: '🧱 Toko Bangunan & Material', tab: 'marketplace', cat: 'materials' },
+                      { id: 'notary', name: '📜 Notaris & PPAT', tab: 'marketplace', cat: 'notary' },
+                      { id: 'architects', name: '📐 Arsitek & Desain', tab: 'marketplace', cat: 'architects' },
+                    ].map(item => (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setActiveTab(item.tab);
+                          setActiveCategory(item.cat);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center justify-between cursor-pointer ${activeTab === item.tab && activeCategory === item.cat ? 'bg-gradient-to-r from-teal-700 to-emerald-800 text-white shadow-xs font-black' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950'}`}
+                      >
+                        <span>{item.name}</span>
+                        <span className="text-[10px] opacity-70">➔</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Sidebar Menu 2: Fitur Utama & Transaksi */}
+                <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs space-y-2">
+                  <span className="text-[11px] font-black text-slate-800 uppercase tracking-wider block">Menu Transaksi</span>
+                  <div className="space-y-1 text-xs font-bold">
+                    <button
+                      onClick={() => { setActiveTab('marketplace'); setActiveCategory('projects'); }}
+                      className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer ${activeTab === 'marketplace' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-700 hover:bg-slate-100'}`}
+                    >
+                      <span>🏢</span>
+                      <span>Marketplace Listing</span>
+                      <span className="ml-auto text-[9px] bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded-full font-black">A1</span>
+                    </button>
+
+                    <button
+                      onClick={() => setActiveTab('verification')}
+                      className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer ${activeTab === 'verification' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-700 hover:bg-slate-100'}`}
+                    >
+                      <span>🛡️</span>
+                      <span>Hub Verifikasi 3-Lapis</span>
+                    </button>
+
+                    <button
+                      onClick={() => setActiveTab('escrow')}
+                      className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer ${activeTab === 'escrow' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-700 hover:bg-slate-100'}`}
+                    >
+                      <span>🔒</span>
+                      <span>Escrow Deal Room</span>
+                    </button>
+
+                    <button
+                      onClick={() => setIsCalculatorOpen(true)}
+                      className="w-full text-left px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 transition-all flex items-center gap-2 cursor-pointer font-black"
+                    >
+                      <span>🧮</span>
+                      <span>Simulator Fee NARA</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Sidebar Menu 3: Info & Bantuan */}
+                <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-4 rounded-2xl shadow-sm space-y-3">
+                  <div className="flex items-center gap-2 text-xs font-black text-amber-300">
+                    <span>📢</span>
+                    <span>Pusat Berita & Bantuan</span>
+                  </div>
+                  <div className="space-y-1.5 text-xs font-semibold">
+                    <a 
+                      href="./berita.html"
+                      className="block text-slate-200 hover:text-white hover:underline transition-colors flex items-center justify-between"
+                    >
+                      <span>📖 Baca Siaran Pers Resmi</span>
+                      <span>↗</span>
+                    </a>
+                    <a 
+                      href="./tentang.html"
+                      className="block text-slate-200 hover:text-white hover:underline transition-colors flex items-center justify-between"
+                    >
+                      <span>🏛️ Tentang Ekosistem NARA</span>
+                      <span>↗</span>
+                    </a>
+                    <button 
+                      onClick={() => setIsCareModalOpen(true)}
+                      className="w-full text-left text-teal-300 hover:text-teal-200 hover:underline transition-colors flex items-center justify-between cursor-pointer"
+                    >
+                      <span>🎧 Nara Care 24/7 Hotline</span>
+                      <span>➔</span>
+                    </button>
+                  </div>
+                </div>
+
+              </aside>
+
+              {/* === RIGHT MAIN CONTENT AREA === */}
+              <div className="flex-1 min-w-0 space-y-6 w-full">
+                
+                {/* TAB 1: FLOW VISUALIZER & COMPACT LUXURY HERO */}
+                {activeTab === 'flow' && (
+                  <div className="space-y-6">
+                    
+                    {/* COMPACT LUXURY HERO SECTION */}
+                    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#064e3b] via-[#047857] to-[#022c22] border border-emerald-500/30 p-4 sm:p-5 lg:p-6 shadow-xl text-white">
+                      
+                      {/* Ambient Glow */}
+                      <div className="absolute -top-20 -right-20 w-72 h-72 bg-[#1ac1b9]/20 rounded-full blur-3xl pointer-events-none"></div>
+                      <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+                      <div className="relative z-10 space-y-4">
+                        
+                        {/* Compact Headline News & Press Release Bar */}
+                        <div className="bg-emerald-950/80 backdrop-blur-md p-2.5 sm:p-3 rounded-xl border border-teal-400/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 shadow-sm">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <span className="bg-amber-400 text-slate-950 text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider shrink-0 flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-slate-950 animate-ping"></span>
+                              <span>{heroConfig.headlineCategory || 'BERITA TERBARU'}</span>
+                            </span>
+                            <h4 className="text-xs font-black text-white truncate">
+                              {heroConfig.headingPre} <span className="text-amber-300">{heroConfig.headingHighlight}</span>
+                            </h4>
+                          </div>
+
+                          <a 
+                            href="./berita.html"
+                            className="shrink-0 px-3 py-1 bg-[#1ac1b9] hover:bg-[#16a39d] text-slate-950 font-black text-[11px] rounded-lg shadow-sm transition-all flex items-center gap-1 self-end sm:self-auto"
+                          >
+                            <span>Baca Lengkap</span>
+                            <span>➔</span>
+                          </a>
+                        </div>
+
+                        {/* Streamlined Main Headline & Visual Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
+                          
+                          {/* Left: Headline & Actions */}
+                          <div className="md:col-span-7 space-y-2.5">
+                            
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-400/20 border border-amber-300/40 text-amber-300 text-[11px] font-black">
+                              <span>✨</span>
+                              <span>{currentPersona.tag}</span>
+                            </div>
+
+                            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black leading-tight tracking-tight text-white">
+                              {currentPersona.title} <span className="text-amber-300 block">{currentPersona.highlight}</span>
+                            </h1>
+
+                            <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed font-medium line-clamp-2">
+                              {currentPersona.desc}
+                            </p>
+
+                            {/* Action Buttons */}
+                            <div className="pt-1 flex flex-wrap gap-2.5">
+                              <button 
+                                onClick={currentPersona.action}
+                                className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-1.5 transform hover:-translate-y-0.5"
+                              >
+                                <span>🚀</span>
+                                <span>{currentPersona.ctaText}</span>
+                              </button>
+
+                              <button 
+                                onClick={() => {
+                                  setAuthModalTab('register');
+                                  setIsAuthModalOpen(true);
+                                }}
+                                className="px-4 py-2 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-400/40 text-white font-extrabold text-xs rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+                              >
+                                <span>⚡ Daftar Cepat</span>
+                              </button>
+                            </div>
+
+                          </div>
+
+                          {/* Right: Compact Showcase Card */}
+                          <div className="md:col-span-5 relative">
+                            <div className="glass-luxury-dark rounded-2xl p-3 border border-white/20 shadow-xl space-y-2.5 relative overflow-hidden">
+                              <div className="relative rounded-xl overflow-hidden border border-white/20 h-28 group">
+                                <img 
+                                  src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80" 
+                                  alt="NARA Deal Closing" 
+                                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent flex flex-col justify-end p-2.5">
+                                  <span className="text-[11px] font-black text-amber-300">Cluster Premium BSD</span>
+                                  <span className="text-[9px] text-slate-200">Joint Venture ROI 16.5% p.a. • Escrow Verified</span>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-2 text-[11px]">
+                                <div className="bg-white/10 p-1.5 rounded-lg border border-white/10 text-center">
+                                  <span className="text-[9px] text-slate-300 block">Nilai Proyek</span>
+                                  <strong className="text-white font-extrabold">Rp 12,5 M</strong>
+                                </div>
+                                <div className="bg-white/10 p-1.5 rounded-lg border border-white/10 text-center">
+                                  <span className="text-[9px] text-slate-300 block">Proteksi</span>
+                                  <strong className="text-amber-300 font-extrabold">100% Escrow</strong>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                        </div>
+
+                      </div>
+                    </div>
 
 
                 {/* 12 KATEGORI AKTOR EKOSISTEM */}
@@ -1195,6 +1316,7 @@
                     </div>
                   ))}
                 </div>
+              </div>
               </div>
             </div>
 
