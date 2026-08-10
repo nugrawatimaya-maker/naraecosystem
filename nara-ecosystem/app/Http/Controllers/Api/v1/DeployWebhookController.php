@@ -13,16 +13,15 @@ class DeployWebhookController extends Controller
      */
     public function deploy(Request $request)
     {
-        $secretToken = $request->header('X-Hub-Signature-256') ?? $request->query('secret');
-        
         // Base working directory
         $baseDir = base_path();
         
-        // Execute git pull & artisan cache clear
         $output = [];
         $returnVar = 0;
         
-        $command = "cd {$baseDir} && git pull origin main 2>&1 && php artisan view:clear 2>&1 && php artisan cache:clear 2>&1";
+        // Ensure git safe.directory is set for www-data and pull changes
+        $command = "git config --global --add safe.directory '*' 2>&1 && git config --global --add safe.directory '{$baseDir}' 2>&1 && cd '{$baseDir}' && git pull origin main 2>&1 && php artisan view:clear 2>&1 && php artisan cache:clear 2>&1";
+        
         exec($command, $output, $returnVar);
         
         Log::info('Auto-Deploy webhook executed', [
