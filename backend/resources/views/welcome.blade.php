@@ -729,15 +729,6 @@
                   </button>
 
                 </div>
-
-                {/* Quick Banner on Desktop Sidebar */}
-                <div className="mt-4 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/80 rounded-2xl p-4 text-center space-y-2">
-                  <span className="text-2xl block">🛡️</span>
-                  <h4 className="text-xs font-extrabold text-blue-900">Garansi Rekening Escrow</h4>
-                  <p className="text-[11px] text-slate-600 leading-snug">
-                    Dana booking & termin aman 100% hingga serah terima fisik sah.
-                  </p>
-                </div>
               </aside>
 
               {/* MAIN CONTENT AREA */}
