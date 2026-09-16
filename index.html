@@ -10,6 +10,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   
+  <!-- Leaflet Map CSS & JS for Interactive Location Coordinate Picker -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -31,7 +35,7 @@
     }
   </script>
 
-  <!-- Custom Marquee & Animation Styles -->
+  <!-- Custom Styles & Marquee Animations -->
   <style>
     body {
       margin: 0;
@@ -71,6 +75,14 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
+
+    /* Leaflet map container z-index fix */
+    .leaflet-pane {
+      z-index: 10 !important;
+    }
+    .leaflet-top, .leaflet-bottom {
+      z-index: 11 !important;
+    }
   </style>
 
   <!-- React 18 & Babel CDN -->
@@ -85,7 +97,53 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect, useMemo } = React;
+    const { useState, useEffect, useMemo, useRef } = React;
+
+    // --- POPULAR FALLBACK REGIONAL DATA (INDONESIA) ---
+    const DEFAULT_PROVINCES = [
+      { id: '73', name: 'SULAWESI SELATAN' },
+      { id: '31', name: 'DKI JAKARTA' },
+      { id: '32', name: 'JAWA BARAT' },
+      { id: '35', name: 'JAWA TIMUR' },
+      { id: '33', name: 'JAWA TENGAH' },
+      { id: '51', name: 'BALI' },
+      { id: '12', name: 'SUMATERA UTARA' },
+      { id: '64', name: 'KALIMANTAN TIMUR (IKN)' }
+    ];
+
+    const DEFAULT_REGENCIES = {
+      '73': [
+        { id: '7308', name: 'KABUPATEN MAROS' },
+        { id: '7371', name: 'KOTA MAKASSAR' },
+        { id: '7306', name: 'KABUPATEN GOWA' },
+        { id: '7309', name: 'KABUPATEN PANGKAJENE DAN KEPULAUAN' },
+        { id: '7302', name: 'KABUPATEN BULUKUMBA' },
+        { id: '7310', name: 'KABUPATEN BARRU' }
+      ],
+      '31': [
+        { id: '3171', name: 'KOTA JAKARTA SELATAN' },
+        { id: '3172', name: 'KOTA JAKARTA BARAT' },
+        { id: '3173', name: 'KOTA JAKARTA PUSAT' }
+      ]
+    };
+
+    const DEFAULT_DISTRICTS = {
+      '7308': [
+        { id: '730801', name: 'TURIKALE' },
+        { id: '730802', name: 'MANDAI (BANDARA)' },
+        { id: '730803', name: 'MARUSU' },
+        { id: '730804', name: 'MONCONGLOE' },
+        { id: '730805', name: 'LAU' },
+        { id: '730806', name: 'BANTAENG / TANRALILI' }
+      ],
+      '7371': [
+        { id: '737101', name: 'PANAKKUKANG' },
+        { id: '737102', name: 'TAMALANREA' },
+        { id: '737103', name: 'RAPPOCINI' },
+        { id: '737104', name: 'BIRINGKANAYA' },
+        { id: '737105', name: 'UJUNG PANDANG' }
+      ]
+    };
 
     // --- SAMPLE DATA: RECENT LISTINGS & NEARBY PROPERTIES ---
     const INITIAL_RECENT_LISTINGS = [
@@ -94,7 +152,7 @@
         title: 'Cluster Minimalis Sunset Garden Maros',
         category: 'listing',
         categoryLabel: 'Rumah Dijual',
-        location: 'Maros, Sulawesi Selatan',
+        location: 'Turikale, Maros, Sulawesi Selatan',
         price: 'Rp 650 Juta',
         priceNum: 650000000,
         roi: 'Potensi Sewa 8% p.a.',
@@ -102,7 +160,7 @@
         image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80',
         verified: true,
         escrow: true,
-        featured: true,
+        coordinates: '-5.0044, 119.5742',
         date: '2 jam lalu'
       },
       {
@@ -110,7 +168,7 @@
         title: 'Lahan Hook Komersial Siap Bangun Ruko',
         category: 'listing',
         categoryLabel: 'Tanah Dijual',
-        location: 'Makassar, Sulawesi Selatan',
+        location: 'Panakkukang, Makassar, Sulawesi Selatan',
         price: 'Rp 2,8 Miliar',
         priceNum: 2800000000,
         roi: 'SHM Bersih & Bebas Banjir',
@@ -118,7 +176,7 @@
         image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80',
         verified: true,
         escrow: true,
-        featured: false,
+        coordinates: '-5.1476, 119.4327',
         date: '4 jam lalu'
       },
       {
@@ -126,7 +184,7 @@
         title: 'Ruko Modern 3 Lantai Prime Business Boulevard',
         category: 'rent',
         categoryLabel: 'Sewa Properti',
-        location: 'Panakkukang, Makassar',
+        location: 'Rappocini, Makassar, Sulawesi Selatan',
         price: 'Rp 85 Jt / Tahun',
         priceNum: 85000000,
         roi: 'Lokasi Ramai & Parkir Luas',
@@ -134,7 +192,7 @@
         image: 'https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=800&q=80',
         verified: true,
         escrow: true,
-        featured: false,
+        coordinates: '-5.1612, 119.4410',
         date: '6 jam lalu'
       },
       {
@@ -142,7 +200,7 @@
         title: 'Jasa Notaris & PPAT Pembuatan Akta Jual Beli',
         category: 'layanan',
         categoryLabel: 'Jasa Legalitas',
-        location: 'Wilayah Sulawesi Selatan',
+        location: 'Makassar, Sulawesi Selatan',
         price: 'Mulai Rp 1,5 Juta',
         priceNum: 1500000,
         roi: 'Proses Cepat & Resmi BPN',
@@ -150,7 +208,6 @@
         image: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=800&q=80',
         verified: true,
         escrow: true,
-        featured: false,
         date: '1 hari lalu'
       },
       {
@@ -158,7 +215,7 @@
         title: 'Kontraktor Sipil Bangun & Renovasi Rumah Mewah',
         category: 'layanan',
         categoryLabel: 'Jasa Kontraktor',
-        location: 'Makassar & Sekitarnya',
+        location: 'Maros & Makassar',
         price: 'Rp 3,8 Jt / m²',
         priceNum: 3800000,
         roi: 'Termin Escrow Garansi 1 Tahun',
@@ -166,7 +223,6 @@
         image: 'https://images.unsplash.com/photo-1541888946425-d0fbb180c5f5?auto=format&fit=crop&w=800&q=80',
         verified: true,
         escrow: true,
-        featured: false,
         date: '1 hari lalu'
       },
       {
@@ -174,7 +230,7 @@
         title: 'Villa Eksklusif Sunrise View Tanjung Bira',
         category: 'rent',
         categoryLabel: 'Sewa Villa',
-        location: 'Bulukumba, Sulawesi Selatan',
+        location: 'Bontobahari, Bulukumba, Sulawesi Selatan',
         price: 'Rp 1,7 Jt / Malam',
         priceNum: 1700000,
         roi: 'Private Pool & Ocean View',
@@ -182,40 +238,8 @@
         image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=800&q=80',
         verified: true,
         escrow: true,
-        featured: false,
+        coordinates: '-5.6133, 120.4578',
         date: '2 hari lalu'
-      },
-      {
-        id: 'rec-7',
-        title: 'Gudang Logistik Modern Akses Kontainer 40ft',
-        category: 'rent',
-        categoryLabel: 'Sewa Gudang',
-        location: 'Kawasan Industri Makassar (KIMA)',
-        price: 'Rp 220 Jt / Tahun',
-        priceNum: 220000000,
-        roi: 'Keamanan 24 Jam & Loading Dock',
-        specs: 'Luas Bangunan 1.200m² • Tinggi 9m',
-        image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=800&q=80',
-        verified: true,
-        escrow: true,
-        featured: false,
-        date: '3 hari lalu'
-      },
-      {
-        id: 'rec-8',
-        title: 'Tanah Kavling Siap Bangun Perumahan Maros',
-        category: 'listing',
-        categoryLabel: 'Tanah Dijual',
-        location: 'Mandai, Maros',
-        price: 'Rp 380 Juta',
-        priceNum: 380000000,
-        roi: 'Dekat Bandara Sultan Hasanuddin',
-        specs: 'Luas 150m² • Akses Jalan Paving 7m',
-        image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80',
-        verified: true,
-        escrow: true,
-        featured: false,
-        date: '4 hari lalu'
       }
     ];
 
@@ -225,7 +249,7 @@
         title: 'Rumah 2 Lantai Cluster Smart Living',
         category: 'listing',
         categoryLabel: 'Rumah Dijual',
-        location: 'BTP, Makassar',
+        location: 'Tamalanrea, Makassar, Sulawesi Selatan',
         price: 'Rp 890 Juta',
         priceNum: 890000000,
         roi: 'Bisa KPR Bank DP 0%',
@@ -240,7 +264,7 @@
         title: 'Tanah Strategis Pinggir Jalan Poros Provinsi',
         category: 'listing',
         categoryLabel: 'Tanah Dijual',
-        location: 'Poros Maros - Pangkep',
+        location: 'Mandai, Maros, Sulawesi Selatan',
         price: 'Rp 1,5 Miliar',
         priceNum: 1500000000,
         roi: 'Cocok SPBU / Mini Market',
@@ -255,7 +279,7 @@
         title: 'Sewa Ruko 2 Pintu Lokasi Pasar Sentral',
         category: 'rent',
         categoryLabel: 'Sewa Properti',
-        location: 'Sentral Niaga Maros',
+        location: 'Turikale, Maros, Sulawesi Selatan',
         price: 'Rp 60 Jt / Tahun',
         priceNum: 60000000,
         roi: 'Trafik Pengunjung Sangat Padat',
@@ -270,7 +294,7 @@
         title: 'Jasa Arsitektur, Desain Interior & Gambar PBG',
         category: 'layanan',
         categoryLabel: 'Jasa Desain',
-        location: 'Makassar & Maros',
+        location: 'Maros & Makassar, Sulawesi Selatan',
         price: 'Mulai Rp 35 Rb / m²',
         priceNum: 35000,
         roi: 'Render 3D Realistis & Garansi Izin',
@@ -285,7 +309,7 @@
         title: 'Rumah Subsidi Siap Huni Bebas Biaya Akad',
         category: 'listing',
         categoryLabel: 'Rumah Subsidi',
-        location: 'Moncongloe, Maros',
+        location: 'Moncongloe, Maros, Sulawesi Selatan',
         price: 'Rp 168 Juta',
         priceNum: 168000000,
         roi: 'Cicilan Flat Rp 1 Jt-an / Bln',
@@ -300,7 +324,7 @@
         title: 'Sewa Alat Berat & Supply Material Pasir/Batu',
         category: 'layanan',
         categoryLabel: 'Supplier Material',
-        location: 'Depot Material Maros',
+        location: 'Marusu, Maros, Sulawesi Selatan',
         price: 'Harga Grosir Armada',
         priceNum: 450000,
         roi: 'Pengiriman Cepat Tepat Waktu',
@@ -309,42 +333,12 @@
         verified: true,
         escrow: true,
         distance: '5.0 km dari Anda'
-      },
-      {
-        id: 'near-7',
-        title: 'Cluster Townhouse Modern Dekat Kampus Unhas',
-        category: 'listing',
-        categoryLabel: 'Rumah Dijual',
-        location: 'Tamalanrea, Makassar',
-        price: 'Rp 1,1 Miliar',
-        priceNum: 1100000000,
-        roi: 'Potensi Kost Mahasiswa Tinggi',
-        specs: 'LT 105m² • LB 110m² • 4 KT • 3 KM',
-        image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80',
-        verified: true,
-        escrow: true,
-        distance: '5.8 km dari Anda'
-      },
-      {
-        id: 'near-8',
-        title: 'Lahan Kebun Produktif Buah & Villa Maros',
-        category: 'listing',
-        categoryLabel: 'Tanah Dijual',
-        location: 'Tompobulu, Maros',
-        price: 'Rp 450 Juta',
-        priceNum: 450000000,
-        roi: 'SHM Bersih & Ada Sumber Air',
-        specs: 'Luas 3.000m² • Pohon Durian & Rambutan',
-        image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80',
-        verified: true,
-        escrow: true,
-        distance: '7.2 km dari Anda'
       }
     ];
 
-    // --- MAIN APP COMPONENT ---
+    // --- MAIN REACT APP ---
     function App() {
-      // Nav & Filter State
+      // Nav & Category Filter State
       const [activeCategory, setActiveCategory] = useState('all'); // 'all', 'listing', 'rent', 'layanan'
       const [searchQuery, setSearchQuery] = useState('');
       const [recentLimit, setRecentLimit] = useState(6);
@@ -370,7 +364,7 @@
 
       // Modals State
       const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-      const [authTab, setAuthTab] = useState('login'); // 'login' or 'register'
+      const [authTab, setAuthTab] = useState('login');
       const [authEmail, setAuthEmail] = useState('');
       const [authPassword, setAuthPassword] = useState('');
       const [authName, setAuthName] = useState('');
@@ -378,7 +372,6 @@
 
       const [isListingModalOpen, setIsListingModalOpen] = useState(false);
       const [selectedDetailItem, setSelectedDetailItem] = useState(null);
-      
       const [isCareModalOpen, setIsCareModalOpen] = useState(false);
       const [isUpdatesModalOpen, setIsUpdatesModalOpen] = useState(false);
       const [isInboxModalOpen, setIsInboxModalOpen] = useState(false);
@@ -386,24 +379,248 @@
       const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false);
       const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
-      // Form New Listing State
+      // Map Modal State for GPS Coordinate Picker
+      const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+      const [selectedCoords, setSelectedCoords] = useState(null); // { lat, lng }
+      const mapContainerRef = useRef(null);
+      const mapInstanceRef = useRef(null);
+      const markerInstanceRef = useRef(null);
+
+      // Regional API Data States
+      const [provinces, setProvinces] = useState(DEFAULT_PROVINCES);
+      const [regencies, setRegencies] = useState(DEFAULT_REGENCIES['73']);
+      const [districts, setDistricts] = useState(DEFAULT_DISTRICTS['7308']);
+      
+      const [selectedProvinceId, setSelectedProvinceId] = useState('73');
+      const [selectedProvinceName, setSelectedProvinceName] = useState('SULAWESI SELATAN');
+      const [selectedRegencyId, setSelectedRegencyId] = useState('7308');
+      const [selectedRegencyName, setSelectedRegencyName] = useState('KABUPATEN MAROS');
+      const [selectedDistrictId, setSelectedDistrictId] = useState('730801');
+      const [selectedDistrictName, setSelectedDistrictName] = useState('TURIKALE');
+      const [detailAddress, setDetailAddress] = useState('');
+
+      // Media Upload States (Up to 10 photos & 1 video, max 15MB total)
+      const [uploadedPhotos, setUploadedPhotos] = useState([]); // Array of { id, name, size, url, file }
+      const [uploadedVideo, setUploadedVideo] = useState(null); // { name, size, url, file }
+      const [uploadError, setUploadError] = useState('');
+
+      // Form Data State
       const [newListingData, setNewListingData] = useState({
         title: '',
         category: 'listing',
         categoryLabel: 'Rumah Dijual',
-        location: '',
         price: '',
         specs: '',
-        image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80',
         contact: ''
       });
 
-      // Initialize Lucide Icons
+      // Load Provinces from Emsifa API on mount
       useEffect(() => {
-        if (window.lucide) {
-          window.lucide.createIcons();
+        const fetchProvinces = async () => {
+          try {
+            const res = await fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json');
+            if (res.ok) {
+              const data = await res.json();
+              if (Array.isArray(data) && data.length > 0) {
+                setProvinces(data);
+              }
+            }
+          } catch(err) {
+            console.log('Using default provinces fallback', err);
+          }
+        };
+        fetchProvinces();
+      }, []);
+
+      // Handle Province Change
+      const handleProvinceChange = async (e) => {
+        const provId = e.target.value;
+        const provObj = provinces.find(p => p.id === provId);
+        const provName = provObj ? provObj.name : '';
+
+        setSelectedProvinceId(provId);
+        setSelectedProvinceName(provName);
+        setSelectedRegencyId('');
+        setSelectedRegencyName('');
+        setSelectedDistrictId('');
+        setSelectedDistrictName('');
+
+        // Try fetch regencies
+        try {
+          const res = await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${provId}.json`);
+          if (res.ok) {
+            const data = await res.json();
+            setRegencies(data);
+          } else {
+            setRegencies(DEFAULT_REGENCIES[provId] || [{ id: `${provId}01`, name: `KABUPATEN / KOTA (${provName})` }]);
+          }
+        } catch(err) {
+          setRegencies(DEFAULT_REGENCIES[provId] || [{ id: `${provId}01`, name: `KABUPATEN / KOTA (${provName})` }]);
         }
-      });
+      };
+
+      // Handle Regency Change
+      const handleRegencyChange = async (e) => {
+        const regId = e.target.value;
+        const regObj = regencies.find(r => r.id === regId);
+        const regName = regObj ? regObj.name : '';
+
+        setSelectedRegencyId(regId);
+        setSelectedRegencyName(regName);
+        setSelectedDistrictId('');
+        setSelectedDistrictName('');
+
+        // Try fetch districts
+        try {
+          const res = await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${regId}.json`);
+          if (res.ok) {
+            const data = await res.json();
+            setDistricts(data);
+          } else {
+            setDistricts(DEFAULT_DISTRICTS[regId] || [{ id: `${regId}01`, name: `KECAMATAN PUSAT (${regName})` }]);
+          }
+        } catch(err) {
+          setDistricts(DEFAULT_DISTRICTS[regId] || [{ id: `${regId}01`, name: `KECAMATAN PUSAT (${regName})` }]);
+        }
+      };
+
+      // Handle District Change
+      const handleDistrictChange = (e) => {
+        const distId = e.target.value;
+        const distObj = districts.find(d => d.id === distId);
+        const distName = distObj ? distObj.name : '';
+        setSelectedDistrictId(distId);
+        setSelectedDistrictName(distName);
+      };
+
+      // Handle Multi-Photo Upload (Max 10 Photos)
+      const handlePhotosUpload = (e) => {
+        setUploadError('');
+        const files = Array.from(e.target.files);
+        if (!files.length) return;
+
+        if (uploadedPhotos.length + files.length > 10) {
+          setUploadError('Maksimal hanya dapat mengunggah hingga 10 foto properti!');
+          return;
+        }
+
+        // Check file size (max 15MB total limit)
+        const MAX_BYTES = 15 * 1024 * 1024;
+        let currentTotalSize = uploadedPhotos.reduce((acc, curr) => acc + curr.size, 0) + (uploadedVideo ? uploadedVideo.size : 0);
+        let newBatchSize = files.reduce((acc, curr) => acc + curr.size, 0);
+
+        if (currentTotalSize + newBatchSize > MAX_BYTES) {
+          setUploadError('Total ukuran berkas foto & video melebihi batas maksimal 15 MB!');
+          return;
+        }
+
+        const newPhotos = files.map((file, idx) => ({
+          id: 'photo-' + Date.now() + '-' + idx,
+          name: file.name,
+          size: file.size,
+          sizeFormatted: (file.size / (1024 * 1024)).toFixed(2) + ' MB',
+          url: URL.createObjectURL(file),
+          file: file
+        }));
+
+        setUploadedPhotos(prev => [...prev, ...newPhotos]);
+      };
+
+      const removePhoto = (id) => {
+        setUploadedPhotos(prev => prev.filter(p => p.id !== id));
+      };
+
+      // Handle Video Upload (Max 1 Video, Max 15MB)
+      const handleVideoUpload = (e) => {
+        setUploadError('');
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const MAX_BYTES = 15 * 1024 * 1024;
+        let currentTotalPhotosSize = uploadedPhotos.reduce((acc, curr) => acc + curr.size, 0);
+
+        if (currentTotalPhotosSize + file.size > MAX_BYTES) {
+          setUploadError('Ukuran video melebihi batas total 15 MB!');
+          return;
+        }
+
+        setUploadedVideo({
+          name: file.name,
+          size: file.size,
+          sizeFormatted: (file.size / (1024 * 1024)).toFixed(2) + ' MB',
+          url: URL.createObjectURL(file),
+          file: file
+        });
+      };
+
+      const removeVideo = () => {
+        setUploadedVideo(null);
+      };
+
+      // Initialize Leaflet Map when Map Modal Opens
+      useEffect(() => {
+        if (isMapModalOpen) {
+          setTimeout(() => {
+            if (!mapContainerRef.current) return;
+
+            const initialLat = selectedCoords ? selectedCoords.lat : -5.0044;
+            const initialLng = selectedCoords ? selectedCoords.lng : 119.5742;
+
+            if (mapInstanceRef.current) {
+              mapInstanceRef.current.remove();
+            }
+
+            const map = L.map(mapContainerRef.current).setView([initialLat, initialLng], 13);
+            mapInstanceRef.current = map;
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: '© OpenStreetMap contributors',
+              maxZoom: 19,
+            }).addTo(map);
+
+            const marker = L.marker([initialLat, initialLng], { draggable: true }).addTo(map);
+            markerInstanceRef.current = marker;
+
+            marker.on('dragend', (event) => {
+              const position = event.target.getLatLng();
+              setSelectedCoords({
+                lat: parseFloat(position.lat.toFixed(6)),
+                lng: parseFloat(position.lng.toFixed(6))
+              });
+            });
+
+            map.on('click', (e) => {
+              marker.setLatLng(e.latlng);
+              setSelectedCoords({
+                lat: parseFloat(e.latlng.lat.toFixed(6)),
+                lng: parseFloat(e.latlng.lng.toFixed(6))
+              });
+            });
+          }, 200);
+        }
+      }, [isMapModalOpen]);
+
+      // Get Current GPS Location
+      const getCurrentGpsLocation = () => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              const lat = parseFloat(pos.coords.latitude.toFixed(6));
+              const lng = parseFloat(pos.coords.longitude.toFixed(6));
+              setSelectedCoords({ lat, lng });
+              if (mapInstanceRef.current && markerInstanceRef.current) {
+                mapInstanceRef.current.setView([lat, lng], 15);
+                markerInstanceRef.current.setLatLng([lat, lng]);
+              }
+            },
+            (err) => {
+              alert('Gagal mengambil koordinat GPS otomatis: ' + err.message);
+            }
+          );
+        } else {
+          alert('Browser Anda tidak mendukung Geolocation GPS.');
+        }
+      };
 
       // Save Favorites to LocalStorage
       const toggleFavorite = (item, e) => {
@@ -489,28 +706,51 @@
         localStorage.removeItem('nara_current_user');
       };
 
-      // Handle New Listing Form
+      // Handle New Listing Form Submission
       const handleListingSubmit = (e) => {
         e.preventDefault();
+
+        // Construct formatted location string
+        const locParts = [];
+        if (selectedDistrictName) locParts.push(selectedDistrictName);
+        if (selectedRegencyName) locParts.push(selectedRegencyName);
+        if (selectedProvinceName) locParts.push(selectedProvinceName);
+        if (detailAddress) locParts.push(`(${detailAddress})`);
+        
+        const fullLocation = locParts.join(', ') || 'Maros, Sulawesi Selatan';
+        const primaryImage = uploadedPhotos.length > 0 
+          ? uploadedPhotos[0].url 
+          : 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80';
+
         const created = {
           id: 'user-list-' + Date.now(),
-          title: newListingData.title || 'Properti Baru Ditambahkan',
+          title: newListingData.title || 'Listing Properti Baru',
           category: newListingData.category,
-          categoryLabel: newListingData.category === 'listing' ? 'Properti Dijual' : (newListingData.category === 'rent' ? 'Sewa Properti' : 'Layanan Jasa'),
-          location: newListingData.location || 'Makassar, Sulawesi Selatan',
+          categoryLabel: newListingData.category === 'listing' ? 'Rumah / Lahan Dijual' : (newListingData.category === 'rent' ? 'Sewa Properti' : 'Layanan Jasa'),
+          location: fullLocation,
           price: newListingData.price || 'Rp 1 Miliar',
           priceNum: 1000000000,
           roi: 'Verifikasi NARA Escrow Active',
           specs: newListingData.specs || 'Spesifikasi terdaftar resmi',
-          image: newListingData.image,
+          image: primaryImage,
+          gallery: uploadedPhotos.map(p => p.url),
+          video: uploadedVideo ? uploadedVideo.url : null,
+          coordinates: selectedCoords ? `${selectedCoords.lat}, ${selectedCoords.lng}` : null,
           verified: true,
           escrow: true,
           featured: true,
           date: 'Baru saja'
         };
+
         INITIAL_RECENT_LISTINGS.unshift(created);
         setIsListingModalOpen(false);
         setSelectedDetailItem(created);
+
+        // Reset form
+        setNewListingData({ title: '', category: 'listing', categoryLabel: 'Rumah Dijual', price: '', specs: '', contact: '' });
+        setUploadedPhotos([]);
+        setUploadedVideo(null);
+        setSelectedCoords(null);
       };
 
       return (
@@ -537,7 +777,6 @@
                     alt="Nara Logo" 
                     className="h-10 sm:h-11 w-auto object-contain transition-transform group-hover:scale-105"
                     onError={(e) => {
-                      // Fallback SVG logo if image not available
                       e.target.style.display = 'none';
                       e.target.nextSibling.style.display = 'flex';
                     }}
@@ -553,8 +792,6 @@
 
                 {/* Center: Main Nav Links (Listing, Rent, Layanan, + LISTING) */}
                 <nav className="flex items-center gap-1 sm:gap-2 md:gap-4">
-                  
-                  {/* Listing Tab */}
                   <button 
                     onClick={() => {
                       setActiveCategory(activeCategory === 'listing' ? 'all' : 'listing');
@@ -569,7 +806,6 @@
                     Listing
                   </button>
 
-                  {/* Rent Tab */}
                   <button 
                     onClick={() => {
                       setActiveCategory(activeCategory === 'rent' ? 'all' : 'rent');
@@ -584,7 +820,6 @@
                     Rent
                   </button>
 
-                  {/* Layanan Tab */}
                   <button 
                     onClick={() => {
                       setActiveCategory(activeCategory === 'layanan' ? 'all' : 'layanan');
@@ -599,7 +834,6 @@
                     Layanan
                   </button>
 
-                  {/* + LISTING Button (Highlighted) */}
                   <button 
                     onClick={() => setIsListingModalOpen(true)}
                     className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-300/80 font-black text-xs sm:text-sm transition-all flex items-center gap-1 cursor-pointer shadow-xs"
@@ -607,10 +841,9 @@
                     <span>+</span>
                     <span>LISTING</span>
                   </button>
-
                 </nav>
 
-                {/* Right: SIGN Button / User Avatar */}
+                {/* Right: SIGN Button / User Profile */}
                 <div className="shrink-0">
                   {currentUser ? (
                     <div className="flex items-center gap-2 bg-slate-100 border border-slate-200 rounded-xl p-1.5 pr-3 shadow-xs">
@@ -656,7 +889,7 @@
               <aside className="hidden md:block md:col-span-3 lg:col-span-2 sticky top-24">
                 <div className="bg-white border-2 border-slate-200/90 rounded-2xl p-3 shadow-xs space-y-1.5">
                   
-                  {/* Item 1: Cari */}
+                  {/* Cari */}
                   <button 
                     onClick={() => setIsSearchOverlayOpen(true)}
                     className="w-full text-left px-3.5 py-3 rounded-xl text-xs font-extrabold text-slate-700 hover:bg-slate-100 hover:text-blue-600 transition-all flex items-center justify-between group cursor-pointer"
@@ -668,7 +901,7 @@
                     <span className="text-[10px] text-slate-400 group-hover:text-blue-500">⌘K</span>
                   </button>
 
-                  {/* Item 2: Favorite */}
+                  {/* Favorite */}
                   <button 
                     onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
                     className={`w-full text-left px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all flex items-center justify-between group cursor-pointer ${
@@ -688,7 +921,7 @@
                     )}
                   </button>
 
-                  {/* Item 3: Update */}
+                  {/* Update */}
                   <button 
                     onClick={() => setIsUpdatesModalOpen(true)}
                     className="w-full text-left px-3.5 py-3 rounded-xl text-xs font-extrabold text-slate-700 hover:bg-slate-100 hover:text-blue-600 transition-all flex items-center justify-between group cursor-pointer"
@@ -700,7 +933,7 @@
                     <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
                   </button>
 
-                  {/* Item 4: Inbox */}
+                  {/* Inbox */}
                   <button 
                     onClick={() => setIsInboxModalOpen(true)}
                     className="w-full text-left px-3.5 py-3 rounded-xl text-xs font-extrabold text-slate-700 hover:bg-slate-100 hover:text-blue-600 transition-all flex items-center justify-between group cursor-pointer"
@@ -714,7 +947,7 @@
                     </span>
                   </button>
 
-                  {/* Item 5: CS Nara */}
+                  {/* CS Nara */}
                   <button 
                     onClick={() => setIsCareModalOpen(true)}
                     className="w-full text-left px-3.5 py-3 rounded-xl text-xs font-extrabold text-slate-700 hover:bg-teal-50 hover:text-teal-800 transition-all flex items-center justify-between group cursor-pointer border-t border-slate-100 mt-2 pt-3"
@@ -734,17 +967,12 @@
               {/* MAIN CONTENT AREA */}
               <main className="md:col-span-9 lg:col-span-10 space-y-8">
                 
-                {/* ============================================================ */}
-                {/* 2A. HERO SECTION (Clean White with Light Blue Border)       */}
-                {/* ============================================================ */}
+                {/* 2A. HERO SECTION (Clean White with Light Blue Border) */}
                 <div className="relative overflow-hidden rounded-3xl bg-white border-2 border-blue-200/90 p-6 sm:p-8 lg:p-10 shadow-[0_10px_35px_-10px_rgba(37,99,235,0.08)] text-slate-900">
-                  
-                  {/* Subtle Light Ambient Glows */}
                   <div className="absolute -top-24 -right-24 w-80 h-80 bg-blue-400/5 rounded-full blur-3xl pointer-events-none"></div>
                   <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-teal-400/5 rounded-full blur-3xl pointer-events-none"></div>
 
                   <div className="relative z-10 max-w-3xl space-y-4">
-                    
                     <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-extrabold tracking-wide">
                       <span>✨</span>
                       <span>Ekosistem Properti & Konstruksi B2B Terpadu</span>
@@ -817,9 +1045,7 @@
                   </div>
                 </div>
 
-                {/* ============================================================ */}
-                {/* 2B. SECTION 1: TERAKHIR DILIHAT (6 Cards Grid)              */}
-                {/* ============================================================ */}
+                {/* 2B. SECTION 1: TERAKHIR DILIHAT (6 Cards Grid) */}
                 <section className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
@@ -866,7 +1092,6 @@
                           className="bg-white border-2 border-slate-200 hover:border-blue-300 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-all group cursor-pointer flex flex-col justify-between"
                         >
                           <div>
-                            {/* Card Image */}
                             <div className="relative h-44 sm:h-48 overflow-hidden bg-slate-100">
                               <img 
                                 src={item.image} 
@@ -874,14 +1099,12 @@
                                 className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" 
                               />
                               
-                              {/* Category Badge */}
                               <div className="absolute top-3 left-3">
                                 <span className="bg-slate-950/80 backdrop-blur-md text-white text-[10px] font-black px-2.5 py-1 rounded-lg border border-white/20">
                                   {item.categoryLabel}
                                 </span>
                               </div>
 
-                              {/* Favorite Heart Button */}
                               <button 
                                 onClick={(e) => toggleFavorite(item, e)}
                                 className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-md ${
@@ -894,7 +1117,6 @@
                                 {isFav(item.id) ? '❤️' : '🤍'}
                               </button>
 
-                              {/* Verified Escrow Tag */}
                               <div className="absolute bottom-3 left-3">
                                 <span className="bg-emerald-600/90 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-md flex items-center gap-1">
                                   <span>🛡️</span>
@@ -903,7 +1125,6 @@
                               </div>
                             </div>
 
-                            {/* Card Body */}
                             <div className="p-4 space-y-2">
                               <div className="flex items-center justify-between text-[11px] text-slate-500 font-semibold">
                                 <span className="flex items-center gap-1">
@@ -923,7 +1144,6 @@
                             </div>
                           </div>
 
-                          {/* Card Footer: Price & CTA */}
                           <div className="px-4 pb-4 pt-2 border-t border-slate-100 flex items-center justify-between">
                             <div>
                               <span className="text-[10px] text-slate-400 block font-semibold">Harga / Nilai</span>
@@ -940,7 +1160,6 @@
                     </div>
                   )}
 
-                  {/* Tampilkan Lebih Banyak Link (Exact as sketch) */}
                   {filteredRecent.length > recentLimit && (
                     <div className="text-center pt-2">
                       <button 
@@ -953,9 +1172,7 @@
                   )}
                 </section>
 
-                {/* ============================================================ */}
-                {/* 2C. SECTION 2: PROPERTY DI SEKITARMU (6 Cards Grid)         */}
-                {/* ============================================================ */}
+                {/* 2C. SECTION 2: PROPERTY DI SEKITARMU (6 Cards Grid) */}
                 {!showFavoritesOnly && (
                   <section className="space-y-4 pt-4 border-t border-slate-200">
                     <div className="flex items-center justify-between">
@@ -980,7 +1197,6 @@
                           className="bg-white border-2 border-slate-200 hover:border-blue-300 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-all group cursor-pointer flex flex-col justify-between"
                         >
                           <div>
-                            {/* Card Image */}
                             <div className="relative h-44 sm:h-48 overflow-hidden bg-slate-100">
                               <img 
                                 src={item.image} 
@@ -988,21 +1204,18 @@
                                 className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" 
                               />
                               
-                              {/* Category Badge */}
                               <div className="absolute top-3 left-3">
                                 <span className="bg-slate-950/80 backdrop-blur-md text-white text-[10px] font-black px-2.5 py-1 rounded-lg border border-white/20">
                                   {item.categoryLabel}
                                 </span>
                               </div>
 
-                              {/* Distance Badge */}
                               <div className="absolute bottom-3 right-3">
                                 <span className="bg-blue-600/95 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-md">
                                   {item.distance}
                                 </span>
                               </div>
 
-                              {/* Favorite Heart Button */}
                               <button 
                                 onClick={(e) => toggleFavorite(item, e)}
                                 className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-md ${
@@ -1016,7 +1229,6 @@
                               </button>
                             </div>
 
-                            {/* Card Body */}
                             <div className="p-4 space-y-2">
                               <div className="flex items-center text-[11px] text-slate-500 font-semibold gap-1">
                                 <span>📍</span>
@@ -1033,7 +1245,6 @@
                             </div>
                           </div>
 
-                          {/* Card Footer: Price & CTA */}
                           <div className="px-4 pb-4 pt-2 border-t border-slate-100 flex items-center justify-between">
                             <div>
                               <span className="text-[10px] text-slate-400 block font-semibold">Harga / Tarif</span>
@@ -1049,7 +1260,6 @@
                       ))}
                     </div>
 
-                    {/* Tampilkan Lebih Banyak Link */}
                     {filteredNearby.length > nearLimit && (
                       <div className="text-center pt-2">
                         <button 
@@ -1097,8 +1307,6 @@
           {/* ============================================================ */}
           <footer className="max-w-4xl mx-auto px-4 py-8 w-full">
             <div className="bg-white border-2 border-slate-200/90 rounded-2xl p-6 text-center space-y-3 shadow-xs">
-              
-              {/* Tentang Kami Button / Link */}
               <div>
                 <button 
                   onClick={() => setIsAboutModalOpen(true)}
@@ -1108,7 +1316,6 @@
                 </button>
               </div>
 
-              {/* Social Media Channels */}
               <div className="text-xs sm:text-sm text-slate-600 font-medium pt-1">
                 <span>Temukan Kami Di : </span>
                 <span className="font-bold text-slate-900 space-x-1">
@@ -1123,16 +1330,13 @@
               <div className="text-[11px] text-slate-400 font-semibold pt-2 border-t border-slate-100">
                 © 2026 NaraEcosystem® Indonesia. All rights reserved. Platform Jual, Beli, Sewa Properti & Escrow.
               </div>
-
             </div>
           </footer>
 
           {/* ============================================================ */}
-          {/* 5. MOBILE BOTTOM NAVIGATION BAR (Fixed at bottom on mobile)  */}
+          {/* 5. MOBILE BOTTOM NAVIGATION BAR                              */}
           {/* ============================================================ */}
           <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-2 flex items-center justify-around shadow-lg">
-            
-            {/* Cari */}
             <button 
               onClick={() => setIsSearchOverlayOpen(true)}
               className="flex flex-col items-center gap-1 text-slate-600 hover:text-blue-600 p-1"
@@ -1141,7 +1345,6 @@
               <span className="text-[10px] font-extrabold">Cari</span>
             </button>
 
-            {/* Favorite */}
             <button 
               onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
               className={`flex flex-col items-center gap-1 p-1 relative ${showFavoritesOnly ? 'text-rose-600' : 'text-slate-600 hover:text-rose-600'}`}
@@ -1155,7 +1358,6 @@
               )}
             </button>
 
-            {/* Update */}
             <button 
               onClick={() => setIsUpdatesModalOpen(true)}
               className="flex flex-col items-center gap-1 text-slate-600 hover:text-blue-600 p-1"
@@ -1164,7 +1366,6 @@
               <span className="text-[10px] font-extrabold">Update</span>
             </button>
 
-            {/* Inbox */}
             <button 
               onClick={() => setIsInboxModalOpen(true)}
               className="flex flex-col items-center gap-1 text-slate-600 hover:text-blue-600 p-1"
@@ -1173,7 +1374,6 @@
               <span className="text-[10px] font-extrabold">Inbox</span>
             </button>
 
-            {/* CS Nara */}
             <button 
               onClick={() => setIsCareModalOpen(true)}
               className="flex flex-col items-center gap-1 text-teal-700 p-1"
@@ -1181,14 +1381,356 @@
               <span className="text-lg">🎧</span>
               <span className="text-[10px] font-extrabold">CS Nara</span>
             </button>
-
           </div>
 
           {/* ============================================================ */}
-          {/* 6. MODALS & DRAWERS (No Dummy Pages, Fully Functional)       */}
+          {/* 6. ADVANCED MODALS: FORM LISTING, MAP PICKER, AUTH & DETAILS */}
           {/* ============================================================ */}
 
-          {/* A. AUTH MODAL (SIGN IN / REGISTER / GOOGLE SSO) */}
+          {/* A. ADVANCED + LISTING MODAL WITH REGION & MULTI-UPLOAD */}
+          {isListingModalOpen && (
+            <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+              <div className="bg-white border-2 border-slate-300 rounded-3xl p-5 sm:p-7 max-w-2xl w-full shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+                <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">➕</span>
+                    <div>
+                      <h3 className="text-base sm:text-lg font-black text-slate-900">Pasang Listing Gratis</h3>
+                      <span className="text-[11px] text-slate-500 font-semibold">Isi data properti/jasa lengkap dengan foto & koordinat peta</span>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setIsListingModalOpen(false)}
+                    className="text-slate-400 hover:text-slate-700 text-lg font-bold p-1"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <form onSubmit={handleListingSubmit} className="space-y-4">
+                  {/* Judul Listing */}
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Judul Listing / Nama Properti</label>
+                    <input 
+                      type="text" 
+                      required
+                      placeholder="Contoh: Rumah Minimalis 2 Lantai Dekat Bandara Sultan Hasanuddin"
+                      value={newListingData.title}
+                      onChange={(e) => setNewListingData({...newListingData, title: e.target.value})}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium"
+                    />
+                  </div>
+
+                  {/* Kategori & Harga */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">Kategori</label>
+                      <select 
+                        value={newListingData.category}
+                        onChange={(e) => setNewListingData({...newListingData, category: e.target.value})}
+                        className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium"
+                      >
+                        <option value="listing">Listing (Rumah / Lahan Dijual)</option>
+                        <option value="rent">Rent (Sewa Ruko / Rumah / Villa / Gudang)</option>
+                        <option value="layanan">Layanan (Jasa Notaris / Kontraktor / Arsitek)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">Harga / Tarif</label>
+                      <input 
+                        type="text" 
+                        required
+                        placeholder="Contoh: Rp 650 Juta / Rp 85 Jt/Tahun"
+                        value={newListingData.price}
+                        onChange={(e) => setNewListingData({...newListingData, price: e.target.value})}
+                        className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  {/* LOKASI BERJENJANG: PROVINSI, KABUPATEN/KOTA, KECAMATAN */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                        <span>📍</span>
+                        <span>Lokasi Properti Berjenjang</span>
+                      </span>
+                      <span className="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                        Otomatis Terstruktur
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                      {/* 1. Provinsi */}
+                      <div>
+                        <label className="text-[11px] font-bold text-slate-600 block mb-1">Provinsi</label>
+                        <select 
+                          value={selectedProvinceId}
+                          onChange={handleProvinceChange}
+                          className="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium"
+                        >
+                          <option value="">-- Pilih Provinsi --</option>
+                          {provinces.map(prov => (
+                            <option key={prov.id} value={prov.id}>{prov.name}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* 2. Kabupaten / Kota */}
+                      <div>
+                        <label className="text-[11px] font-bold text-slate-600 block mb-1">Kabupaten / Kota</label>
+                        <select 
+                          value={selectedRegencyId}
+                          onChange={handleRegencyChange}
+                          disabled={!selectedProvinceId}
+                          className="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium disabled:bg-slate-100"
+                        >
+                          <option value="">-- Pilih Kab / Kota --</option>
+                          {regencies.map(reg => (
+                            <option key={reg.id} value={reg.id}>{reg.name}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* 3. Kecamatan */}
+                      <div>
+                        <label className="text-[11px] font-bold text-slate-600 block mb-1">Kecamatan</label>
+                        <select 
+                          value={selectedDistrictId}
+                          onChange={handleDistrictChange}
+                          disabled={!selectedRegencyId}
+                          className="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium disabled:bg-slate-100"
+                        >
+                          <option value="">-- Pilih Kecamatan --</option>
+                          {districts.map(dist => (
+                            <option key={dist.id} value={dist.id}>{dist.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Alamat Lengkap */}
+                    <div>
+                      <input 
+                        type="text" 
+                        placeholder="Alamat Detail / Nama Jalan / Patokan Komplek..."
+                        value={detailAddress}
+                        onChange={(e) => setDetailAddress(e.target.value)}
+                        className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      />
+                    </div>
+
+                    {/* PILIHAN OPSIONAL PETA & TITIK KOORDINAT */}
+                    <div className="pt-1 flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-slate-200 mt-2">
+                      <div className="text-xs text-slate-600">
+                        {selectedCoords ? (
+                          <span className="font-extrabold text-blue-700 flex items-center gap-1">
+                            <span>✅ Titik Peta Terpilih:</span>
+                            <span className="font-mono bg-blue-50 px-2 py-0.5 rounded border border-blue-200">{selectedCoords.lat}, {selectedCoords.lng}</span>
+                          </span>
+                        ) : (
+                          <span className="text-slate-500">Titik Koordinat Peta: <em className="text-slate-400">Belum dipilih (Opsional)</em></span>
+                        )}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setIsMapModalOpen(true)}
+                        className="w-full sm:w-auto px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-blue-700 border border-blue-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <span>🗺️</span>
+                        <span>{selectedCoords ? 'Ubah Titik Koordinat Peta' : 'Buka Peta & Ambil Koordinat'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Spesifikasi Singkat */}
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Spesifikasi Singkat Properti</label>
+                    <input 
+                      type="text" 
+                      placeholder="Contoh: LT 120m² • LB 80m² • 3 KT • 2 KM • Listrik 2200W • SHM Bersih"
+                      value={newListingData.specs}
+                      onChange={(e) => setNewListingData({...newListingData, specs: e.target.value})}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    />
+                  </div>
+
+                  {/* UPLOAD MULTI FOTO (MAX 10) & 1 VIDEO (MAX 15 MB) */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-xs font-black text-slate-900 block">📸 Upload Foto & Video Properti</span>
+                        <span className="text-[11px] text-slate-500">Maksimal 10 Foto & 1 Video singkat (Batas total 15 MB)</span>
+                      </div>
+                      <span className="text-[10px] font-black bg-teal-50 text-teal-800 border border-teal-200 px-2 py-0.5 rounded">
+                        {uploadedPhotos.length}/10 Foto • {uploadedVideo ? '1/1 Video' : '0/1 Video'}
+                      </span>
+                    </div>
+
+                    {uploadError && (
+                      <div className="p-2.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl font-bold flex items-center justify-between">
+                        <span>⚠️ {uploadError}</span>
+                        <button type="button" onClick={() => setUploadError('')} className="text-rose-500 hover:text-rose-800 font-black">✕</button>
+                      </div>
+                    )}
+
+                    {/* Upload Buttons Box */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {/* Upload Photos Input */}
+                      <label className="border-2 border-dashed border-slate-300 hover:border-blue-500 bg-white rounded-xl p-3 text-center cursor-pointer transition-colors block">
+                        <input 
+                          type="file" 
+                          multiple 
+                          accept="image/*"
+                          onChange={handlePhotosUpload}
+                          className="hidden" 
+                        />
+                        <span className="text-xl block mb-0.5">🖼️</span>
+                        <span className="text-xs font-extrabold text-blue-600 block">+ Pilih Foto (Maks 10)</span>
+                        <span className="text-[10px] text-slate-400">JPG, PNG, WebP</span>
+                      </label>
+
+                      {/* Upload Video Input */}
+                      <label className="border-2 border-dashed border-slate-300 hover:border-teal-500 bg-white rounded-xl p-3 text-center cursor-pointer transition-colors block">
+                        <input 
+                          type="file" 
+                          accept="video/*"
+                          onChange={handleVideoUpload}
+                          className="hidden" 
+                        />
+                        <span className="text-xl block mb-0.5">🎥</span>
+                        <span className="text-xs font-extrabold text-teal-700 block">{uploadedVideo ? 'Ganti Video Properti' : '+ Pilih 1 Video (Maks 15MB)'}</span>
+                        <span className="text-[10px] text-slate-400">MP4, MOV, WebM</span>
+                      </label>
+                    </div>
+
+                    {/* Preview Uploaded Photos */}
+                    {uploadedPhotos.length > 0 && (
+                      <div className="space-y-1.5 pt-1">
+                        <span className="text-[11px] font-bold text-slate-600 block">Preview Foto Terpilih:</span>
+                        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                          {uploadedPhotos.map((photo, idx) => (
+                            <div key={photo.id} className="relative group rounded-xl overflow-hidden border border-slate-200 bg-white h-20 shadow-xs">
+                              <img src={photo.url} alt={photo.name} className="w-full h-full object-cover" />
+                              <button 
+                                type="button" 
+                                onClick={() => removePhoto(photo.id)}
+                                className="absolute top-1 right-1 bg-rose-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shadow-md hover:scale-110 transition-transform"
+                                title="Hapus foto"
+                              >
+                                ✕
+                              </button>
+                              <span className="absolute bottom-0 inset-x-0 bg-slate-950/70 text-white text-[8px] font-bold text-center py-0.5 truncate px-1">
+                                {idx === 0 ? 'Sampul Utama' : photo.sizeFormatted}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Preview Uploaded Video */}
+                    {uploadedVideo && (
+                      <div className="p-2.5 bg-white border border-slate-200 rounded-xl flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5 overflow-hidden">
+                          <span className="text-2xl shrink-0">🎬</span>
+                          <div className="truncate text-xs">
+                            <span className="font-extrabold text-slate-900 block truncate">{uploadedVideo.name}</span>
+                            <span className="text-[10px] text-slate-500 font-semibold">{uploadedVideo.sizeFormatted} • Siap diunggah</span>
+                          </div>
+                        </div>
+                        <button 
+                          type="button" 
+                          onClick={removeVideo}
+                          className="px-2 py-1 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-lg text-xs font-bold shrink-0 transition-colors"
+                        >
+                          Hapus Video
+                        </button>
+                      </div>
+                    )}
+
+                  </div>
+
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-800 space-y-1">
+                    <span className="font-extrabold block">🛡️ Proteksi NARA Escrow Active</span>
+                    <span>Listing Anda otomatis mendapatkan penjaminan Rekening Bersama dan diawasi Notaris mitra PPAT.</span>
+                  </div>
+
+                  <button 
+                    type="submit"
+                    className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs sm:text-sm rounded-xl shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+                  >
+                    Tayangkan Listing Sekarang
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* B. INTERACTIVE LEAFLET MAP MODAL (COORDINATE PICKER) */}
+          {isMapModalOpen && (
+            <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6">
+              <div className="bg-white border-2 border-slate-300 rounded-3xl p-5 sm:p-6 max-w-3xl w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">🗺️</span>
+                    <div>
+                      <h3 className="text-base font-black text-slate-900">Pilih Titik Koordinat Lokasi Properti</h3>
+                      <span className="text-[11px] text-slate-500">Klik pada peta atau geser pin merah untuk menentukan lokasi presisi</span>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setIsMapModalOpen(false)}
+                    className="text-slate-400 hover:text-slate-700 text-lg font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Map View Canvas */}
+                <div 
+                  ref={mapContainerRef} 
+                  className="w-full h-80 sm:h-96 rounded-2xl overflow-hidden border-2 border-slate-300 shadow-inner"
+                ></div>
+
+                {/* Bottom Map Info & Action Bar */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                  <div className="text-xs text-slate-700 flex items-center gap-2">
+                    <span className="font-bold">Koordinat Terpilih:</span>
+                    <span className="font-mono font-black text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-lg">
+                      {selectedCoords ? `${selectedCoords.lat}, ${selectedCoords.lng}` : '-5.004400, 119.574200 (Default Maros)'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={getCurrentGpsLocation}
+                      className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <span>📡 Lokasi Saya</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!selectedCoords) {
+                          setSelectedCoords({ lat: -5.0044, lng: 119.5742 });
+                        }
+                        setIsMapModalOpen(false);
+                      }}
+                      className="flex-1 sm:flex-none px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black transition-all cursor-pointer shadow-md"
+                    >
+                      Gunakan Titik Ini
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* C. AUTH MODAL (SIGN IN / REGISTER) */}
           {isAuthModalOpen && (
             <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
               <div className="bg-white border-2 border-slate-300 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-200">
@@ -1207,7 +1749,6 @@
                   </button>
                 </div>
 
-                {/* Google SSO Button */}
                 <button
                   type="button"
                   onClick={handleGoogleSso}
@@ -1306,114 +1847,7 @@
             </div>
           )}
 
-          {/* B. + LISTING MODAL */}
-          {isListingModalOpen && (
-            <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-              <div className="bg-white border-2 border-slate-300 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
-                <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">➕</span>
-                    <h3 className="text-lg font-black text-slate-900">Pasang Listing Gratis</h3>
-                  </div>
-                  <button 
-                    onClick={() => setIsListingModalOpen(false)}
-                    className="text-slate-400 hover:text-slate-700 text-lg font-bold p-1"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                <form onSubmit={handleListingSubmit} className="space-y-3.5">
-                  <div>
-                    <label className="text-xs font-bold text-slate-700 block mb-1">Judul Listing / Properti</label>
-                    <input 
-                      type="text" 
-                      required
-                      placeholder="Contoh: Rumah Minimalis 2 Lantai Dekat Bandara"
-                      value={newListingData.title}
-                      onChange={(e) => setNewListingData({...newListingData, title: e.target.value})}
-                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs font-bold text-slate-700 block mb-1">Kategori</label>
-                      <select 
-                        value={newListingData.category}
-                        onChange={(e) => setNewListingData({...newListingData, category: e.target.value})}
-                        className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                      >
-                        <option value="listing">Listing (Jual Properti/Tanah)</option>
-                        <option value="rent">Rent (Sewa Ruko/Rumah/Villa)</option>
-                        <option value="layanan">Layanan (Jasa/Notaris/Kontraktor)</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="text-xs font-bold text-slate-700 block mb-1">Harga / Tarif</label>
-                      <input 
-                        type="text" 
-                        required
-                        placeholder="Contoh: Rp 750 Juta"
-                        value={newListingData.price}
-                        onChange={(e) => setNewListingData({...newListingData, price: e.target.value})}
-                        className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-slate-700 block mb-1">Lokasi Properti / Jasa</label>
-                    <input 
-                      type="text" 
-                      required
-                      placeholder="Contoh: Maros, Sulawesi Selatan"
-                      value={newListingData.location}
-                      onChange={(e) => setNewListingData({...newListingData, location: e.target.value})}
-                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-slate-700 block mb-1">Spesifikasi Singkat</label>
-                    <input 
-                      type="text" 
-                      placeholder="Contoh: LT 120m² • LB 80m² • 3 KT • SHM"
-                      value={newListingData.specs}
-                      onChange={(e) => setNewListingData({...newListingData, specs: e.target.value})}
-                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-slate-700 block mb-1">URL Foto Properti</label>
-                    <input 
-                      type="text" 
-                      placeholder="https://..."
-                      value={newListingData.image}
-                      onChange={(e) => setNewListingData({...newListingData, image: e.target.value})}
-                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                    />
-                  </div>
-
-                  <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-800 space-y-1">
-                    <span className="font-extrabold block">🛡️ Proteksi NARA Escrow Active</span>
-                    <span>Listing Anda otomatis mendapatkan verifikasi awal dan dilindungi Rekening Bersama.</span>
-                  </div>
-
-                  <button 
-                    type="submit"
-                    className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-black text-xs sm:text-sm rounded-xl shadow-md transition-all cursor-pointer"
-                  >
-                    Tayangkan Listing Sekarang
-                  </button>
-                </form>
-              </div>
-            </div>
-          )}
-
-          {/* C. DETAIL ITEM MODAL */}
+          {/* D. DETAIL ITEM MODAL */}
           {selectedDetailItem && (
             <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
               <div className="bg-white border-2 border-slate-300 rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
@@ -1449,6 +1883,11 @@
                       {isFav(selectedDetailItem.id) ? '❤️' : '🤍'}
                     </button>
                   </div>
+                  {selectedDetailItem.coordinates && (
+                    <div className="absolute bottom-3 left-3 bg-slate-950/80 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-lg">
+                      🗺️ GPS: {selectedDetailItem.coordinates}
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
@@ -1475,7 +1914,7 @@
 
                 <div className="pt-2 flex flex-wrap items-center gap-3">
                   <a 
-                    href="https://wa.me/6281244445555?text=Halo%20NARA%20Care,%20saya%20tertarik%20dengan%20listing:%20" 
+                    href={`https://wa.me/6281244445555?text=Halo%20NARA%20Care,%20saya%20tertarik%20dengan%20listing:%20${encodeURIComponent(selectedDetailItem.title)}`}
                     target="_blank"
                     className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs sm:text-sm rounded-xl text-center shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
@@ -1496,7 +1935,7 @@
             </div>
           )}
 
-          {/* D. SEARCH OVERLAY MODAL */}
+          {/* E. SEARCH OVERLAY */}
           {isSearchOverlayOpen && (
             <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-start justify-center p-4 pt-20">
               <div className="bg-white border-2 border-slate-300 rounded-3xl p-6 max-w-xl w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
@@ -1549,7 +1988,7 @@
             </div>
           )}
 
-          {/* E. UPDATE MODAL */}
+          {/* F. UPDATES MODAL */}
           {isUpdatesModalOpen && (
             <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
               <div className="bg-white border-2 border-slate-300 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
@@ -1576,7 +2015,7 @@
             </div>
           )}
 
-          {/* F. INBOX MODAL */}
+          {/* G. INBOX MODAL */}
           {isInboxModalOpen && (
             <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
               <div className="bg-white border-2 border-slate-300 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
@@ -1604,7 +2043,7 @@
             </div>
           )}
 
-          {/* G. CS NARA CARE MODAL */}
+          {/* H. CS NARA CARE MODAL */}
           {isCareModalOpen && (
             <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
               <div className="bg-white border-2 border-slate-300 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
@@ -1635,7 +2074,7 @@
             </div>
           )}
 
-          {/* H. TENTANG KAMI MODAL */}
+          {/* I. TENTANG KAMI MODAL */}
           {isAboutModalOpen && (
             <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
               <div className="bg-white border-2 border-slate-300 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
